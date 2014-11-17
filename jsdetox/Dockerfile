@@ -34,4 +34,4 @@ EXPOSE 3000
 
 USER nonroot
 WORKDIR /home/nonroot/jsdetox
-CMD ./jsdetox -l $HOSTNAME
+CMD ./jsdetox -l $HOSTNAME 2>/dev/null
