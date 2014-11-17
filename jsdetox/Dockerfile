@@ -2,6 +2,10 @@
 # This Docker image encapsulates the JSDetox malware analysis tool by @sven_t
 # from http://www.relentless-coding.com/projects/jsdetox
 #
+# To run this image after installing Docker, use the following command:
+# sudo docker run –rm -p 3000:3000 lennyzeltser/jsdetox
+# Then, connect to http://localhost:3000 using your web browser.
+#
 
 FROM ubuntu:14.04
 MAINTAINER Lenny Zeltser (www.zeltser.com)
