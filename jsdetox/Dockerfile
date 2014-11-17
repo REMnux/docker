@@ -8,7 +8,7 @@
 #
 
 FROM ubuntu:14.04
-MAINTAINER Lenny Zeltser (www.zeltser.com)
+MAINTAINER Lenny Zeltser (@lennyzeltser, www.zeltser.com)
 
 USER root
 RUN apt-get update && apt-get install -y \
