@@ -50,5 +50,5 @@ USER nonroot
 USER nonroot
 RUN mkdir /home/nonroot/workdir
 WORKDIR /home/nonroot/workdir
-ENTRYPOINT ["./viper.py"]
+ENTRYPOINT ["../viper/viper.py"]
 CMD [""]
