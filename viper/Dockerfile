@@ -1,5 +1,5 @@
 #
-# This Docker image encapsulates the Viper  binary analysis and management
+# This Docker image encapsulates the Viper binary analysis and management
 # framework by Claudio Guarnieri from http://viper.li
 #
 # To run this image after installing Docker, a command like this, replacing "user/viper" with the
