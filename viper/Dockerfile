@@ -9,6 +9,9 @@
 #    -v /home/user/viper/binaries:/home/nonroot/viper/binaries \
 #    -v /home/user/viper/projects:/home/nonroot/viper/projects lennyzeltser/viper
 #
+# Before running Viper, create the  "binaries" and "projects" directories and make them
+# world-accessible ("chmod a+xwr").
+#
 
 FROM ubuntu:14.04
 MAINTAINER Lenny Zeltser (@lennyzeltser, www.zeltser.com)
