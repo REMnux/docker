@@ -47,8 +47,6 @@ RUN chmod a+xr viper.py &&\
   pip install -r requirements.txt 
 
 USER nonroot
-USER nonroot
 RUN mkdir /home/nonroot/workdir
 WORKDIR /home/nonroot/workdir
-ENTRYPOINT ["../viper/viper.py"]
-CMD [""]
+CMD ["../viper/viper.py"]
