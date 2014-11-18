@@ -5,12 +5,9 @@
 # To run this image after installing Docker, use a command like this, replacing "user/viper" with
 # the path to the location of your Viper "binaries" and "projects" directories:
 #
-# sudo docker run --rm -it \
-#    -v /home/user/viper/binaries:/home/nonroot/viper/binaries \
-#    -v /home/user/viper/projects:/home/nonroot/viper/projects lennyzeltser/viper
+# sudo docker run --rm -it -v ~/viper-workdir:/home/nonroot/workdir lennyzeltser/viper
 #
-# Before running Viper, create the  "binaries" and "projects" directories and make them
-# world-accessible ("chmod a+xwr").
+# Before running Viper, create the  ~/viper-workdir and make it world-accessible ("chmod a+xwr").
 #
 
 FROM ubuntu:14.04
@@ -50,6 +47,8 @@ RUN chmod a+xr viper.py &&\
   pip install -r requirements.txt 
 
 USER nonroot
-WORKDIR /home/nonroot/viper
+USER nonroot
+RUN mkdir /home/nonroot/workdir
+WORKDIR /home/nonroot/workdir
 ENTRYPOINT ["./viper.py"]
 CMD [""]
