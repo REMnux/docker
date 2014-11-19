@@ -47,6 +47,7 @@ RUN chmod a+xr viper.py &&\
   pip install -r requirements.txt 
 
 USER nonroot
-RUN mkdir /home/nonroot/workdir
+RUN sed -i 's/~\/.viperhistory/\/home\/nonroot\/workdir\/viperhistory/' /home/nonroot/viper/viper/core/ui/console.py && \
+  mkdir /home/nonroot/workdir
 WORKDIR /home/nonroot/workdir
 CMD ["../viper/viper.py"]
