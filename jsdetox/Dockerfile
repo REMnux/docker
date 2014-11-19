@@ -17,8 +17,8 @@ RUN apt-get update && apt-get install -y \
   ruby-dev \
   bundler \
   build-essential
-RUN groupadd -r nonroot -g 433 && \
-  useradd -u 431 -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot && \
+RUN groupadd -r nonroot && \
+  useradd -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot && \
   mkdir /home/nonroot && \
   chown -R nonroot:nonroot /home/nonroot
 
