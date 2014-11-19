@@ -19,21 +19,21 @@ RUN apt-get update && apt-get install -y \
   gcc \
   python-dev \
   python-pip \
-  wget \
+  curl \
   python-socksipy
 RUN pip install SQLAlchemy \
   PrettyTable \
   python-magic
-RUN wget http://sourceforge.net/projects/ssdeep/files/ssdeep-2.12/ssdeep-2.12.tar.gz/download && \
-  tar xvfz download && \
+RUN curl -SL http://sourceforge.net/projects/ssdeep/files/ssdeep-2.12/ssdeep-2.12.tar.gz/download | \
+  tar -xzC .  && \
   cd ssdeep-2.12 && \
   ./configure && \
   make install && \
   pip install pydeep && \
   cd .. && \
   rm -rf ssdeep-2.12
-RUN groupadd -r nonroot -g 433 && \
-  useradd -u 431 -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot && \
+RUN groupadd -r nonroot && \
+  useradd -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot && \
   mkdir /home/nonroot && \
   chown -R nonroot:nonroot /home/nonroot
 
