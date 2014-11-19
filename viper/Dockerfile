@@ -20,7 +20,8 @@ RUN apt-get update && apt-get install -y \
   python-dev \
   python-pip \
   curl \
-  python-socksipy
+  python-socksipy && \
+  rm -rf /var/lib/apt/lists/*
 RUN pip install SQLAlchemy \
   PrettyTable \
   python-magic
