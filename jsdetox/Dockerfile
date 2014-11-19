@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y \
   ruby \
   ruby-dev \
   bundler \
-  build-essential
+  build-essential && \
+  rm -rf /var/lib/apt/lists/*
 RUN groupadd -r nonroot && \
   useradd -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot && \
   mkdir /home/nonroot && \
