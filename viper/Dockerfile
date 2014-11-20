@@ -40,7 +40,9 @@ RUN groupadd -r nonroot && \
 
 USER nonroot
 WORKDIR /home/nonroot
-RUN git clone https://github.com/botherder/viper.git
+RUN git clone https://github.com/botherder/viper.git && \
+  sed -i 's/~\/.viperhistory/\/home\/nonroot\/workdir\/viperhistory/' /home/nonroot/viper/viper/core/ui/console.py && \
+  mkdir /home/nonroot/workdir
 
 USER root
 WORKDIR /home/nonroot/viper
@@ -48,7 +50,5 @@ RUN chmod a+xr viper.py &&\
   pip install -r requirements.txt 
 
 USER nonroot
-RUN sed -i 's/~\/.viperhistory/\/home\/nonroot\/workdir\/viperhistory/' /home/nonroot/viper/viper/core/ui/console.py && \
-  mkdir /home/nonroot/workdir
 WORKDIR /home/nonroot/workdir
 CMD ["../viper/viper.py"]
