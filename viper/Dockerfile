@@ -3,7 +3,7 @@
 # framework by Claudio Guarnieri from http://viper.li
 #
 # To run this image after installing Docker, use a command like this, replacing "~/viper-workdir"
-# with the path to the location of your Viper "binaries" and "projects" directories:
+# with the path to the location of your Viper Viper data directory:
 #
 # sudo docker run --rm -it -v ~/viper-workdir:/home/nonroot/workdir lennyzeltser/viper
 #
