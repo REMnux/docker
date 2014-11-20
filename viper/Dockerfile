@@ -2,8 +2,8 @@
 # This Docker image encapsulates the Viper binary analysis and management
 # framework by Claudio Guarnieri from http://viper.li
 #
-# To run this image after installing Docker, use a command like this, replacing "user/viper" with
-# the path to the location of your Viper "binaries" and "projects" directories:
+# To run this image after installing Docker, use a command like this, replacing "~/viper-workdir"
+# with the path to the location of your Viper "binaries" and "projects" directories:
 #
 # sudo docker run --rm -it -v ~/viper-workdir:/home/nonroot/workdir lennyzeltser/viper
 #
