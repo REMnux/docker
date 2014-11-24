@@ -8,8 +8,10 @@
 # sudo docker run --rm -it -v ~/files:/home/nonroot/files lennyzeltser/v8 bash
 #
 # Before running the image, create the  ~/files directory and make it world-accessible ("chmod a+xwr").
+#
 # Once you've activated the container using the command above, you can run the command-line
-# version of V8 by typing the "d8" command (e.g., "d8 -f ~/files/file.js").
+# version of V8 by typing the "d8" command (e.g., "d8 -f ~/files/file.js"). To use the
+# pre-defined JavaScript definitions, supply a command like "d8 -f ~/def.js ~/files/file.js".
 #
 
 FROM ubuntu:14.04
