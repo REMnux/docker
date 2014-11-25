@@ -71,6 +71,7 @@ RUN apt-get update && \
     libpcre3 \
     libpcre3-dev \
     curl \
+    byacc \
     libffi-dev && \
   rm -rf /var/lib/apt/lists/* && \
 
