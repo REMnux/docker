@@ -1,5 +1,5 @@
 #
-# This Docker image incapsulates the Rekall Memory Forensic Framework,
+# This Docker image encapsulates the Rekall Memory Forensic Framework,
 # which is available at http://www.rekall-forensic.com.
 #
 # To run this image after installing Docker, use a command like this:
