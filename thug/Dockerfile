@@ -71,7 +71,6 @@ RUN apt-get update && \
     libpcre3 \
     libpcre3-dev \
     curl \
-    byacc \
     libffi-dev && \
   rm -rf /var/lib/apt/lists/* && \
 
@@ -95,9 +94,7 @@ RUN git clone git://github.com/buffer/thug.git && \
   rm -rf pyv8 v8 && \
   chmod a+x thug/src/thug.py && \
   mkdir thug/logs && \
-  chown thug:thug thug/logs && \
   mkdir thug/files && \
-  chown thug:thug thug/files && \
   sed -i 's/\tTrue/\tFalse/g' thug/src/Logging/logging.conf
 
 WORKDIR /home
@@ -138,7 +135,9 @@ RUN git clone git://git.carnivore.it/libemu.git && \
   make install && \
   cd .. && \
   rm -rf ssdeep-2.12 && \
-  BUILD_LIB=1 pip install ssdeep
+  BUILD_LIB=1 pip install ssdeep && \
+
+  chown -R thug:thug /home/thug
 
 USER thug
 ENV HOME /home/thug
