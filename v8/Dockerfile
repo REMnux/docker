@@ -2,8 +2,9 @@
 # This Docker image encapsulates the command-line tool "d8" from
 # Google's V8 JavaScript Engine (https://code.google.com/p/v8).
 #
-# To run this image after installing Docker, use a command like this, replacing "~/files"
-# with the path to the location of the files you'd like to examine within the container:
+# To run this image after installing Docker, use a command like this,
+# replacing "~/files" with the path to the location of the files you'd
+# like to examine within the container:
 #
 # sudo docker run --rm -it -v ~/files:/home/nonroot/files lennyzeltser/v8 bash
 #
