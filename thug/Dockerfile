@@ -71,7 +71,7 @@ RUN apt-get update && \
     libpcre3 \
     libpcre3-dev \
     curl \
-    byacc \
+    bison \
     libffi-dev && \
   rm -rf /var/lib/apt/lists/* && \
 
