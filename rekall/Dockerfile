@@ -4,7 +4,7 @@
 #
 # To run this image after installing Docker, use a command like this:
 #
-# sudo docker run --rm -it -v ~/files:/home/nonroot/files lennyzeltser/rekall bash
+# sudo docker run --rm -it -v ~/files:/home/nonroot/files remnux/rekall bash
 #
 # then run "rekall" in the container with the desired parameters.
 #
@@ -14,7 +14,7 @@
 # To use Rekall's web console, invoke the container with the -p parameter to give
 # your host access to the container's TCP port 8000 like this:
 # 
-# sudo docker run --rm -it -p 8000:8000 -v ~/files:/home/nonroot/files lennyzeltser/rekall
+# sudo docker run --rm -it -p 8000:8000 -v ~/files:/home/nonroot/files remnux/rekall
 #
 # Then connect to http://localhost:8000 using a web browser from your host.
 #
