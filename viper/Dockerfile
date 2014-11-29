@@ -5,7 +5,7 @@
 # To run this image after installing Docker, use a command like this, replacing "~/viper-workdir"
 # with the path to the location of your Viper Viper data directory:
 #
-# sudo docker run --rm -it -v ~/viper-workdir:/home/nonroot/workdir lennyzeltser/viper
+# sudo docker run --rm -it -v ~/viper-workdir:/home/nonroot/workdir remnux/viper
 #
 # Before running Viper, create the  ~/viper-workdir and make it world-accessible ("chmod a+xwr").
 #
