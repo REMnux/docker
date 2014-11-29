@@ -1,6 +1,6 @@
 # Rekall Memory Forensic Framework
 
-This Docker image encapsulates the [Rekall Memory Forensic Framework][1]. To run this image after installing Docker, use a command like this:
+This Dockerfile represents a Docker image that encapsulates the [Rekall Memory Forensic Framework][1]. To run this image after installing Docker, use a command like this:
 
     sudo docker run --rm -it -v ~/files:/home/nonroot/files remnux/rekall bash
 
