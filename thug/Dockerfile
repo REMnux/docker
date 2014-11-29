@@ -9,7 +9,7 @@
 #
 # To run this image after installing Docker, use a command like this:
 #
-# sudo docker run --rm -it lennyzeltser/thug bash
+# sudo docker run --rm -it remnux/thug bash
 #
 # then run ./thug.py with the desired parameters.
 #
@@ -17,7 +17,7 @@
 # create a "logs" directory on your host and make it world-accessible
 # (e.g., "chmod a+xwr ~/logs"). Then run the tool like this:
 #
-# sudo docker run --rm -it -v ~/logs:/home/thug/logs lennyzeltser/thug bash
+# sudo docker run --rm -it -v ~/logs:/home/thug/logs remnux/thug bash
 # 
 # If you'd like to share an additional directory (e.g., "files"), supply the
 # mapping using another -v parameter such as "-v ~/files:/home/thug/files",
