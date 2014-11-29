@@ -6,7 +6,7 @@
 # replacing "~/files" with the path to the location of the files you'd
 # like to examine within the container:
 #
-# sudo docker run --rm -it -v ~/files:/home/nonroot/files lennyzeltser/v8 bash
+# sudo docker run --rm -it -v ~/files:/home/nonroot/files remnux/v8 bash
 #
 # Before running the image, create the  ~/files directory and make it world-accessible ("chmod a+xwr").
 #
@@ -48,6 +48,6 @@ RUN mv d8 /usr/local/bin && \
   ln -s /usr/local/bin/d8 /usr/local/bin/v8
 
 USER nonroot
-RUN curl -SL https://raw.githubusercontent.com/REMnux/remnux/v5/def.js --output def.js
+RUN curl -SL https://raw.githubusercontent.com/REMnux/distro/v5/def.js --output def.js
 
 CMD ["d8"]
