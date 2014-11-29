@@ -1,6 +1,6 @@
 # Thug Low-Interaction Honeyclient
 
-This Docker image encapsulates [Thug][1], a low-interaction honeyclient, which was created by Angelo Dell'Aera (angelodellaera).
+This Dockerfile represents a Docker image that encapsulates [Thug][1], a low-interaction honeyclient, which was created by Angelo Dell'Aera (angelodellaera).
 
 The file below is based on ideas from [Spenser Reinhardt's Dockerfile][2] and on instructions outlined by [M. Fields][3].
 
