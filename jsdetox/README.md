@@ -1,6 +1,6 @@
 # JSDetox Malware Analysis Tool for JavaScript Deobfuscation
 
-This image encapsulates the [JSDetox][1] malware analysis tool for JavaScript deobfuscation by [@sven_t][2]. To run JSDetox after installing Docker, use the following command:
+This Dockerfile represents a Docker image that encapsulates the [JSDetox][1] malware analysis tool for JavaScript deobfuscation by [@sven_t][2]. To run JSDetox after installing Docker, use the following command:
 
     sudo docker run --rm -p 3000:3000 remnux/jsdetox
 
