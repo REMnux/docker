@@ -3,7 +3,7 @@
 # from http://www.relentless-coding.com/projects/jsdetox
 #
 # To run this image after installing Docker, use the following command:
-# sudo docker run –-rm -p 3000:3000 lennyzeltser/jsdetox
+# sudo docker run –-rm -p 3000:3000 remnux/jsdetox
 # Then, connect to http://localhost:3000 using your web browser.
 #
 
