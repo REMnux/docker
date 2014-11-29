@@ -1,6 +1,6 @@
 # Google's V8 JavaScript Engine
 
-This Docker image encapsulates the command-line tool "d8" from [Google's V8 JavaScript Engine][1].
+This Dockerfile represents a Docker image that encapsulates the command-line tool "d8" from [Google's V8 JavaScript Engine][1].
 
 To run this image after installing Docker, use a command like this, replacing "~/files" with the path to the location of the files you'd like to examine within the container:
 
