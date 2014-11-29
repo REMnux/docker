@@ -1,4 +1,4 @@
-= JSDetox Malware Analysis Tool for JavaScript Deobfuscation
+# JSDetox Malware Analysis Tool for JavaScript Deobfuscation
 
 This image encapsulates the [JSDetox][1] malware analysis tool for JavaScript deobfuscation by [@sven_t][2]. To run JSDetox after installing Docker, use the following command:
 
