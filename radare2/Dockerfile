@@ -7,7 +7,7 @@
 #
 # sudo docker run --rm -it -v ~/workdir:/home/nonroot/workdir remnux/radare2 bash
 #
-# Then run the "rd2" command inside the container.
+# Then run "r2" or other Radare2 commands inside the container.
 #
 # Before running the application, create ~/workdir on your host and make it
 # world-accessible ("chmod a+xwr").
@@ -61,4 +61,5 @@ RUN curl -SL https://download.gnome.org/sources/vala/0.26/${VALA_TAR}.tar.xz | \
   chown nonroot:nonroot /home/nonroot/workdir
 
 USER nonroot
+WORKDIR /home/nonroot/workdir
 CMD ["r2"]
