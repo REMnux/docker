@@ -5,7 +5,7 @@
 # To run this image after installing Docker, use a command like this, replacing
 # "~/workdir" with the path to your working directory on the underlying host:
 #
-# sudo docker run --rm -it -v ~/workdir:/home/nonroot/workdir remnux/radare2
+# sudo docker run --rm -it -v ~/workdir:/home/nonroot/workdir remnux/radare2 bash
 #
 # Then run the "rd2" command inside the container.
 #
