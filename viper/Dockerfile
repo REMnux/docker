@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y \
   python-dev \
   python-pip \
   curl \
+  libtool \
+  autoconf \
   python-socksipy && \
   rm -rf /var/lib/apt/lists/*
 RUN pip install SQLAlchemy \
@@ -42,12 +44,25 @@ USER nonroot
 WORKDIR /home/nonroot
 RUN git clone https://github.com/botherder/viper.git && \
   sed -i 's/~\/.viperhistory/\/home\/nonroot\/workdir\/viperhistory/' /home/nonroot/viper/viper/core/ui/console.py && \
-  mkdir /home/nonroot/workdir
+  mkdir /home/nonroot/workdir && \
+  curl https://raw.githubusercontent.com/robbyFux/viper/patch-1/modules/vttool.py -o viper/modules/vttool.py
 
 USER root
 WORKDIR /home/nonroot/viper
-RUN chmod a+xr viper.py &&\
-  pip install -r requirements.txt 
+RUN chmod a+xr viper.py && \
+  pip install -r requirements.txt && \
+  pip install pyclamd
+
+RUN git clone https://github.com/plusvic/yara.git && \
+  cd yara && \
+  bash build.sh && \
+  make install && \
+  cd yara-python && \
+  python setup.py build && \
+  python setup.py install && \
+  cd ../.. && \
+  rm -rf yara && \
+  ldconfig
 
 USER nonroot
 WORKDIR /home/nonroot/workdir
