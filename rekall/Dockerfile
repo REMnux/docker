@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y \
   byacc \
   git && \
 
-  pip install -q --pre distorm3 && \
+  pip install -q distorm3 && \
   git clone https://github.com/plusvic/yara.git && \
   cd yara && \
   bash build.sh && \
