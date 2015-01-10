@@ -42,8 +42,4 @@ RUN curl -SL https://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py >
 
 USER nonroot
 WORKDIR /home/nonroot/workdir
-CMD ["/usr/bin/python2.7 /opt/pescanner.py"]
-
-##
-# You should fill these in with a path to your YARA rules and PEiD database
-#    pescan = PEScanner(files, '/usr/local/etc/capabilities.yara', '/usr/local/et c/userdb.txt')
+CMD ["/usr/bin/python2.7 /opt/pescanner.py /home/nonroot/workdir/*"]
