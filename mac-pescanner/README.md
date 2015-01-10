@@ -25,10 +25,12 @@ Refs:
 Usage
 -----
 
-To run this image after building or importing it use a command like this to scan some specified files, replacing
+To run this image after building or importing it use a command like this to scan a specifie files, replacing
 "~/workdir" with the path to your working directory on the underlying host:
 
-sudo docker run -it -v ~/workdir:/home/nonroot/workdir mac-pescanner python2.7 /opt/pescanner.py *.exe
+```
+sudo docker run -it -v ~/workdir:/home/nonroot/workdir mac-pescanner *.exe
+```
 
-Before running the application, create ~/workdir on your host and make it world-accessible ("chmod a+xwr"). By default it will scan all of the files
-in the folder shared with it and output the results.
+Before running the application, create ~/workdir on your host and make it world-accessible ("chmod a+xwr"). 
+*FIXME* By default it will try to scan all of the files in the folder shared with it and output the results.
