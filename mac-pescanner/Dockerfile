@@ -1,15 +1,16 @@
 #
 # This Docker image encapsulates the pescanner Python program 
-# from the excellent Malware Analyst Cookbook.
+# from the excellent Malware Analyst Cookbook. 
+# 
+# More info and references are in the README on [GitHub](https://github.com/adricnet/docker)
 #
 # To run this image after installing Docker, use a command like this, replacing
 # "~/workdir" with the path to your working directory on the underlying host:
 #
-# sudo docker run --rm -it -v ~/workdir:/home/nonroot/workdir remnux/mac-pescanner bash
+# sudo docker run -it -v ~/workdir:/home/nonroot/workdir adricnet/mac-pescanner /opt/pescanner.py [target file]
 #
 # Before running the application, create ~/workdir on your host and make it
 # world-accessible ("chmod a+xwr").
-#
 #
 
 FROM ubuntu:14.04
