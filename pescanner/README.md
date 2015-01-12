@@ -2,9 +2,8 @@ This Dockerfile represents a Docker image that encapsulates the [pescanner](http
 
  - Ubuntu base
  - apt in python-magic, yara, python-yara, pip, clamav (all in multiverse) 
- - pip in pefile 
- - capabilities.yara, userdb.txt, and pescanner.py
- - pydams via libdasm (needed for imphash calculations) 
+ - capabilities.yara, userdb.txt, pescanner.py, pefile
+ - pydams via libdasm (needed for imphash calculations)
  
 To run this image, use a command like this to scan a specific files, replacing *~/workdir* with the path to your working directory on the underlying host:
 
