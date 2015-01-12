@@ -32,7 +32,9 @@ RUN apt-get update && apt-get install -y \
     yara \
     python-yara \
     subversion \
-    python-dev && \
+    python-dev \
+    libffi-dev \
+    libfuzzy-dev && \
   rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r nonroot && \
@@ -55,8 +57,9 @@ RUN svn checkout http://libdasm.googlecode.com/svn/trunk/ libdasm && \
 RUN svn checkout http://pefile.googlecode.com/svn/trunk/ pefile && \
   cd pefile && \
   python setup.py install && \
-  cd .. \
-  rm -rf pefile
+  cd .. && \
+  rm -rf pefile && \
+  pip install ssdeep
 
 RUN curl -SL https://raw.githubusercontent.com/hiddenillusion/AnalyzePE/master/pescanner.py > /usr/local/bin/pescanner.py && \
   chmod +x /usr/local/bin/pescanner.py && \
