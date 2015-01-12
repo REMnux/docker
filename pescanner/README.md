@@ -5,16 +5,10 @@ This Dockerfile represents a Docker image that encapsulates the [pescanner](http
  - capabilities.yara, userdb.txt, pescanner.py, pefile
  - pydams via libdasm (needed for imphash calculations)
  
-To run this image, use a command like this to scan a specific files, replacing *~/workdir* with the path to your working directory on the underlying host:
-
-```
-sudo docker run --rm -it -v ~/workdir:/home/nonroot/workdir remnux/pescanner pescanner [target file]
-```
-
-Alternatively, you can laynch a bash shell in the container and then run pescanner within it:
+To run this image after installing Docker, use a command like this, replacing *~/workdir* with the path to your working directory on the underlying host:
 
 ```
 sudo docker run --rm -it -v ~/workdir:/home/nonroot/workdir remnux/pescanner bash
 ```
 
-Before running the application, create *~/workdir* on your host and make it world-accessible (`chmod a+xwr`).
+This will launch the bash shell in the container, at which point you can run the "pescanner" command to scan the desired file. Before running the application, create *~/workdir* on your host and make it world-accessible (`chmod a+xwr`).
