@@ -20,7 +20,7 @@ References:
 To run this image, use a command like this to scan a specific files, replacing *~/workdir* with the path to your working directory on the underlying host:
 
 ```
-sudo docker run -it -v ~/workdir:/home/nonroot/workdir remnux/pescanner /opt/bin/pescanner.py [target file]
+sudo docker run -it -v ~/workdir:/home/nonroot/workdir remnux/pescanner pescanner.py [target file]
 ```
 
 Before running the application, create *~/workdir* on your host and make it world-accessible (`chmod a+xwr`).
