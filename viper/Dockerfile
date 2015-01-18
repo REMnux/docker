@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y \
     python-scipy \
     bison \
     byacc \
+    python-m2crypto \
     python-levenshtein && \
   rm -rf /var/lib/apt/lists/*
 RUN pip install SQLAlchemy \
