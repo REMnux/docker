@@ -50,7 +50,7 @@ RUN apt-get update && apt-get install -y \
     pyelftools \
     pycrypto && \
 
-  pip install --pre rekall && \
+  pip install rekall && \
 
   apt-get remove -y --purge git automake libtool byacc && \
   apt-get autoremove -y --purge && \
