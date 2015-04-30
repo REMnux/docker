@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y \
   python-pip \
   libtool \
   automake \
-  byacc \
+  bison \
   git && \
 
   pip install -q distorm3 && \
