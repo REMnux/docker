@@ -79,7 +79,8 @@ RUN apt-get update && \
     rarfile \
     beautifulsoup4 \
     pefile \
-    six && \
+    six \
+    requesocks && \
 
   groupadd -r thug && \
   useradd -r -g thug -d /home/thug -s /sbin/nologin -c "Thug User" thug
