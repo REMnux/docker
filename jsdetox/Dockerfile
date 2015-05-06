@@ -3,7 +3,7 @@
 # from http://www.relentless-coding.com/projects/jsdetox
 #
 # To run this image after installing Docker, use the following command:
-# sudo docker run –-rm -p 3000:3000 remnux/jsdetox
+# sudo docker run --rm -p 3000:3000 remnux/jsdetox
 # Then, connect to http://localhost:3000 using your web browser.
 #
 
@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
   ruby \
   ruby-dev \
   bundler \
+  zlib1g-dev \
   build-essential && \
   rm -rf /var/lib/apt/lists/*
 RUN groupadd -r nonroot && \
@@ -32,5 +33,6 @@ WORKDIR /home/nonroot/jsdetox
 RUN bundle install
 
 USER nonroot
+EXPOSE 3000
 WORKDIR /home/nonroot/jsdetox
 CMD ./jsdetox -l $HOSTNAME 2>/dev/null
