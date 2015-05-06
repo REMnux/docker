@@ -3,7 +3,7 @@
 # Volatility Foundation from http://www.volatilityfoundation.org/#!releases/component_71401
 #
 # To run this image after installing Docker, use the following command:
-# sudo docker run --rm -it -v ~/memdumps:/home/nonroot/memdumps remnux/volatility2.4 bash
+# sudo docker run --rm -it -v ~/memdumps:/home/nonroot/memdumps remnux/volatility bash
 #
 
 FROM ubuntu:14.04
