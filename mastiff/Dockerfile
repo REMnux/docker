@@ -7,6 +7,8 @@
 #
 # sudo docker run --rm -it -v ~/mastiff-workdir:/home/nonroot/workdir remnux/mastiff
 #
+# then run mas.py in the container with the desired parameters.
+# 
 # Before running MASTIFF, create the  ~/mastiff-workdir and make it world-accessible ("chmod a+xwr").
 #
 
