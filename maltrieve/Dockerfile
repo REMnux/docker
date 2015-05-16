@@ -3,7 +3,8 @@
 # created by Kyle Maxwell (@krmaxwell) for retrieving malware samples.
 #
 # This Dockerfile is based heavily on the one from Kyle's Maltrieve repository at
-# https://github.com/krmaxwell/maltrieve/blob/master/docker/Dockerfile
+# https://github.com/krmaxwell/maltrieve/blob/master/docker/Dockerfile, which is
+# maintained by Michael Boman.
 #
 # To run this image after installing Docker, use a command like this, replacing
 # "~/archive" with the path to your working directory on the underlying host.
