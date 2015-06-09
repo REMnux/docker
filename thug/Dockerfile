@@ -86,7 +86,7 @@ RUN apt-get update && \
   useradd -r -g thug -d /home/thug -s /sbin/nologin -c "Thug User" thug
 
 WORKDIR /home
-RUN git clone git://github.com/buffer/thug.git && \
+RUN git clone -b v0.6.2 git://github.com/buffer/thug.git && \
   svn checkout http://pyv8.googlecode.com/svn/trunk/ pyv8 && \
   patch -p0 < thug/patches/PyV8-patch1.diff && \
   cd pyv8 && \
