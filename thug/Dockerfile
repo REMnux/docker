@@ -95,6 +95,8 @@ RUN git clone -b v0.6.2 git://github.com/buffer/thug.git && \
   cd .. && \
   rm -rf pyv8 v8 && \
   chmod a+x thug/src/thug.py && \
+  sed -i 's#certificate = ssl.get_server_certificate((_url.netloc, port))#certificate = ssl.get_server_certificate((_url.netloc, port), ssl_version = ssl.PROTOCOL_SSLv23)#' thug/src/DOM/HTTPSession.py && \
+  sed -i 's#import ssl#import ssl\n\nfrom ssl import PROTOCOL_SSLv23#' thug/src/DOM/HTTPSession.py && \
   mkdir thug/logs && \
   mkdir thug/files && \
   sed -i 's/\tTrue/\tFalse/g' thug/src/Logging/logging.conf
