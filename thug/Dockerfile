@@ -11,7 +11,8 @@
 #
 # sudo docker run --rm -it remnux/thug bash
 #
-# then run ./thug.py with the desired parameters.
+# then run ./thug.py with the desired parameters (such as -F to enable
+# file logging).
 #
 # To share the "logs" directory between your host and the container,
 # create a "logs" directory on your host and make it world-accessible
@@ -86,7 +87,7 @@ RUN apt-get update && \
   useradd -r -g thug -d /home/thug -s /sbin/nologin -c "Thug User" thug
 
 WORKDIR /home
-RUN git clone -b v0.6.2 git://github.com/buffer/thug.git && \
+RUN git clone git://github.com/buffer/thug.git && \
   svn checkout http://pyv8.googlecode.com/svn/trunk/ pyv8 && \
   patch -p0 < thug/patches/PyV8-patch1.diff && \
   cd pyv8 && \
@@ -95,8 +96,6 @@ RUN git clone -b v0.6.2 git://github.com/buffer/thug.git && \
   cd .. && \
   rm -rf pyv8 v8 && \
   chmod a+x thug/src/thug.py && \
-  sed -i 's#certificate = ssl.get_server_certificate((_url.netloc, port))#certificate = ssl.get_server_certificate((_url.netloc, port), ssl_version = ssl.PROTOCOL_SSLv23)#' thug/src/DOM/HTTPSession.py && \
-  sed -i 's#import ssl#import ssl\n\nfrom ssl import PROTOCOL_SSLv23#' thug/src/DOM/HTTPSession.py && \
   mkdir thug/logs && \
   mkdir thug/files && \
   sed -i 's/\tTrue/\tFalse/g' thug/src/Logging/logging.conf
