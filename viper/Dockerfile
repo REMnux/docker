@@ -28,7 +28,8 @@ RUN apt-get update && apt-get install -y \
     bison \
     byacc \
     python-m2crypto \
-    python-levenshtein && \
+    python-levenshtein \
+    libimage-exiftool-perl && \
   rm -rf /var/lib/apt/lists/*
 RUN pip install SQLAlchemy \
   PrettyTable \
