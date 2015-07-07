@@ -13,6 +13,7 @@ USER root
 RUN apt-get -qq update && apt-get install -y \
   git \
   python2.7 \
+  python-pil \
   wget && \
   ln -fs /usr/bin/python2.7 /usr/bin/python && \
   cd /home && \
