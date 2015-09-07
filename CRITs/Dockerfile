@@ -5,7 +5,7 @@
 # To run this image after installing Docker, use a command like this, replacing “~/crits-data"
 # with the path to the location for storing CRITs data, indefinitely:
 #
-# sudo docker run --rm -it -v ~/crits-data:/home/nonroot/workdir -p 8443:8443 crits 
+# sudo docker run --rm -it -v ~/crits-data:/home/nonroot/workdir -p 8443:8443 remnux/crits 
 #
 # Before running CRITs, create the ~/crits-data directory and make it world-accessible
 # ("chmod a+xwr").
