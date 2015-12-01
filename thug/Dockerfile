@@ -73,17 +73,19 @@ RUN apt-get update && \
     libpcre3-dev \
     curl \
     bison \
-    libffi-dev && \
-  rm -rf /var/lib/apt/lists/* && \
+    libffi-dev \
+    python-socksipy && \
+  rm -rf /var/lib/apt/lists/*
 
-  pip install -q jsbeautifier \
-    rarfile \
-    beautifulsoup4 \
-    pefile \
-    six \
-    requesocks && \
+RUN pip install --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/" -q \
+      pygraphviz && \
+    pip install -q jsbeautifier \
+      rarfile \
+      beautifulsoup4 \
+      pefile \
+      six
 
-  groupadd -r thug && \
+RUN groupadd -r thug && \
   useradd -r -g thug -d /home/thug -s /sbin/nologin -c "Thug User" thug
 
 WORKDIR /home
