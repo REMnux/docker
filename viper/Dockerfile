@@ -53,7 +53,8 @@ RUN groupadd -r nonroot && \
 USER nonroot
 WORKDIR /home/nonroot
 RUN git clone https://github.com/botherder/viper.git && \
-  sed -i 's/~\/.viperhistory/\/home\/nonroot\/workdir\/viperhistory/' viper/viper/core/ui/console.py && \
+  mv viper/viper.conf.sample viper/viper.conf && \
+  sed -i 's/store_path =/store_path =\/home\/nonroot\/workdir/' viper/viper.conf && \
   sed -i 's/data\/yara/\/home\/nonroot\/viper\/data\/yara/g' viper/modules/yarascan.py && \
   rm viper/modules/clamav.py && \
   mkdir /home/nonroot/workdir && \
@@ -64,15 +65,17 @@ WORKDIR /home/nonroot/viper
 RUN chmod a+xr viper.py && \
   pip install -r requirements.txt
 
-RUN git clone https://github.com/plusvic/yara.git && \
-  cd yara && \
-  bash build.sh && \
+RUN curl -SL "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz" | tar -xzC . && \
+ cd yara-3.4.0 && \
+  ./bootstrap.sh && \
+  ./configure && \
+  make && \
   make install && \
-  cd yara-python && \
+  cd yara-python/ && \
   python setup.py build && \
   python setup.py install && \
   cd ../.. && \
-  rm -rf yara && \
+  rm -rf yara-3.4.0 && \
   ldconfig
 
 RUN git clone git://github.com/smarnach/pyexiftool.git && \
@@ -81,6 +84,6 @@ RUN git clone git://github.com/smarnach/pyexiftool.git && \
   cd .. && \
   rm -rf pyexiftool
 
-USER nonroot
-WORKDIR /home/nonroot/workdir
-CMD ["../viper/viper.py"]
+EXPOSE 9090
+WORKDIR /home/nonroot/viper
+CMD ./web.py -H $HOSTNAME
