@@ -6,7 +6,7 @@
 # Viper web interface, replacing "~/viper-workdir" with the path to the location of
 # your Viper Viper data directory:
 #
-# sudo docker run --rm -v ~/viper-workdir:/home/nonroot/workdir remnux/viper
+#  sudo docker run --rm -p 9090:9090 -v ~/viper-workdir:/home/nonroot/workdir remnux/viper
 #
 # Before running Viper, create the  ~/viper-workdir and make it world-accessible ("chmod a+xwr").
 #
