@@ -90,6 +90,7 @@ RUN git clone git://github.com/smarnach/pyexiftool.git && \
   cd .. && \
   rm -rf pyexiftool
 
+USER nonroot
 EXPOSE 9090
 WORKDIR /home/nonroot/viper
 CMD ./web.py -H $HOSTNAME
