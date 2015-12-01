@@ -63,8 +63,7 @@ RUN git clone https://github.com/botherder/viper.git && \
   sed -i 's/store_path =/store_path =\/home\/nonroot\/workdir/' viper/viper.conf && \
   sed -i 's/data\/yara/\/home\/nonroot\/viper\/data\/yara/g' viper/modules/yarascan.py && \
   rm viper/modules/clamav.py && \
-  mkdir /home/nonroot/workdir && \
-  curl https://raw.githubusercontent.com/robbyFux/viper/patch-1/modules/vttool.py -o viper/modules/vttool.py
+  mkdir /home/nonroot/workdir
 
 USER root
 WORKDIR /home/nonroot/viper
