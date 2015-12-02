@@ -135,7 +135,7 @@ RUN curl -SL "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz" | tar -xzC 
   rm -rf yara-3.4.0 && \
   ldconfig
 
-  curl -SL http://sourceforge.net/projects/ssdeep/files/ssdeep-2.12/ssdeep-2.12.tar.gz/download | \
+RUN curl -SL http://sourceforge.net/projects/ssdeep/files/ssdeep-2.12/ssdeep-2.12.tar.gz/download | \
   tar -xzC .  && \
   cd ssdeep-2.12 && \
   ./configure && \
