@@ -103,7 +103,7 @@ RUN git clone git://github.com/buffer/thug.git && \
   sed -i 's/\tTrue/\tFalse/g' thug/src/Logging/logging.conf
 
 WORKDIR /home
-RUN git clone git://git.carnivore.it/libemu.git && \
+RUN git clone https://github.com/buffer/libemu.git && \
   cd libemu && \
   autoreconf -v -i && \
   export CFLAGS=-Wno-error && \
