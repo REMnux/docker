@@ -120,18 +120,20 @@ RUN git clone https://github.com/buffer/libemu.git && \
   cd .. && \
   rm -rf pylibemu && \
   echo /opt/libemu/lib/ >> /etc/ld.so.conf.d/libemu.conf && \
-  ldconfig && \
+  ldconfig
   
-  git clone https://github.com/plusvic/yara.git && \
-  cd yara && \
-  bash build.sh && \
+RUN curl -SL "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz" | tar -xzC . && \
+  cd yara-3.4.0 && \
+  ./bootstrap.sh && \
+  ./configure && \
+  make && \
   make install && \
-  cd yara-python && \
+  cd yara-python/ && \
   python setup.py build && \
   python setup.py install && \
   cd ../.. && \
-  rm -rf yara && \
-  ldconfig && \
+  rm -rf yara-3.4.0 && \
+  ldconfig
 
   curl -SL http://sourceforge.net/projects/ssdeep/files/ssdeep-2.12/ssdeep-2.12.tar.gz/download | \
   tar -xzC .  && \
