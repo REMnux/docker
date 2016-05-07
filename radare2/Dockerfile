@@ -33,10 +33,10 @@ RUN apt-get update && apt-get install -y \
   g++ \
   make \
   pkg-config \
-  glib-2.0
+  glib-2.0 \
   python-gobject-dev \
   valgrind \
-  gdb &&
+  gdb && \
   rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r nonroot && \
