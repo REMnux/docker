@@ -56,7 +56,7 @@ RUN curl -SL https://download.gnome.org/sources/vala/0.26/${VALA_TAR}.tar.xz | \
   rm -rf ${VALA_TAR} && \
   git clone https://github.com/radare/radare2.git && \
   cd radare2 && \
-  ./sys/all.sh && \
+  ./sys/install.sh && \
   mkdir /home/nonroot/workdir && \
   chown nonroot:nonroot /home/nonroot/workdir
 
