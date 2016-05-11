@@ -1,6 +1,6 @@
 This Docker image encapsulates [Metasploit Framework](https://github.com/rapid7/metasploit-framework) software for penetration testing. To run this image after installing Docker, use a command like this:
 
-    sudo  docker run --rm -it -p 80:80 -v ~/.msf4:/root/.msf4 -v /tmp/msf:/tmp/data remnux/metasploit
+    sudo  docker run --rm -it -p 443:443 -v ~/.msf4:/root/.msf4 -v /tmp/msf:/tmp/data remnux/metasploit
 
 The `-p` parameter exposes the ports on which you expect to receive inbound connections from reverse shells and such. Once the app starts, run the desired Metasploit command, such as "msfconsole" inside its container.
 
