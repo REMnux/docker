@@ -15,6 +15,8 @@
 # it left off by reading the files in those locations. If you wish to start from scratch,
 # remove those directories ("sudo rm -rf ~/.msf4 /tmp/msf").
 #
+# In addition to including Metasploit Framework, the image also includes nmap from https://nmap.org.
+#
 
 FROM ubuntu:14.04
 MAINTAINER Phocean <jc@phocean.net>
