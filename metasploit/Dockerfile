@@ -76,4 +76,5 @@ VOLUME /root/.msf4/
 VOLUME /tmp/data/
 
 # Starting script (DB + updates)
+WORKDIR /tmp/data
 CMD /usr/local/bin/init.sh
