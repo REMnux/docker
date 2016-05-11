@@ -2,6 +2,19 @@
 # This Docker image file encapsulates Metasploit Framework, which is distributed
 # from https://github.com/rapid7/metasploit-framework
 #
+# To run this image after installing Docker, use a command like this:
+#
+# docker run --rm -it -p 80:80 -v ~/.msf4:/root/.msf4 -v /tmp/msf:/tmp/data remnux/metasploit
+#
+# The -p parameter exposes the ports on which you expect to receive inbound connections from
+# reverse shells and such. # Once the app starts, run the desired Metasploit command, such as
+# "msfconsole" inside its container.
+#
+# After running the image, you'll have files from your Metasploit session in the ~/.msf4 and
+# /tmp/msf directories on your host. The next time you run the app, it will pick up from where
+# it left off by reading the files in those locations. If you wish to start from scratch,
+# remove those directories ("sudo rm -rf ~/.msf4 /tmp/msf").
+#
 
 FROM ubuntu:14.04
 MAINTAINER Phocean <jc@phocean.net>
