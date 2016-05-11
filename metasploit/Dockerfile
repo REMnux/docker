@@ -6,7 +6,6 @@
 FROM ubuntu:14.04
 MAINTAINER Phocean <jc@phocean.net>
 
-ENV DEBIAN_FRONTEND noninteractive
 WORKDIR /opt
 USER root
 
