@@ -6,4 +6,4 @@ The `-p` parameter exposes the ports on which you expect to receive inbound conn
 
 After running the image, you'll have files from your Metasploit session in the ~/.msf4 and /tmp/msf directories on your host. The next time you run the app, it will pick up from where it left off by reading the files in those locations. If you wish to start from scratch, remove those directories (`sudo rm -rf ~/.msf4 /tmp/msf`).
 
-In addition to including Metasploit Framework, the image also includes [Nmap](https://nmap.org) and [tmux](https://tmux.github.io/).
+In addition to including Metasploit Framework, the image also includes [Nmap](https://nmap.org), [NASM](http://www.nasm.us/) and [tmux](https://tmux.github.io/). For more and examples related to this container, see [Run Metasploit Framework as a Docker Container Without Installation Pains](https://zeltser.com/metasploit-framework-docker-container/).
