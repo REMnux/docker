@@ -2,7 +2,7 @@
 # This Docker image encapsulates the Collaborative Research Into Threats (CRITs)
 # malware and threat repository by The MITRE Corporation from https://crits.github.io/
 #
-# To run this image after installing Docker, use a command like this, replacing “~/crits-data"
+# To run this image after installing Docker, use a command like this, replacing "~/crits-data"
 # with the path to the location for storing CRITs data, indefinitely:
 #
 # sudo docker run --rm -it -v ~/crits-data:/home/nonroot/workdir -p 8443:8443 remnux/crits 
@@ -28,6 +28,7 @@ RUN apt-get -qq update && \
   apt-add-repository -y universe && \
   apt-get -qq update && apt-get install -y --fix-missing \
   build-essential \
+  libjpeg-dev \
   curl \
   git \
   libevent-dev \
@@ -64,7 +65,7 @@ RUN sed -i 's/^\[supervisord\]$/&\nnodaemon\=true\nlogfile\=\/data\/log\/supervi
 
 # Retrieve ssdeeep v.2.13 via wget, verify known good hash and install ssdeep
 RUN cd /tmp && \
-  wget -O ssdeep-2.13.tar.gz "http://sourceforge.net/projects/ssdeep/files/ssdeep-2.13/ssdeep-2.13.tar.gz/download" && \
+  wget -O ssdeep-2.13.tar.gz "http://downloads.sourceforge.net/project/ssdeep/ssdeep-2.13/ssdeep-2.13.tar.gz?r=&ts=1463161883&use_mirror=iweb" && \
   sha256sum ssdeep-2.13.tar.gz > sha256sum.out && \
   sha256sum -c sha256sum.out && \
 
