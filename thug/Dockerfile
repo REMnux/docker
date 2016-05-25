@@ -4,8 +4,10 @@
 # available at https://github.com/buffer/thug.
 #
 # The file below is based on ideas from Spenser Reinhardt's Dockerfile
-# (https://registry.hub.docker.com/u/sreinhardt/honeynet/dockerfile)
-# and on instructions outlined by M. Fields (@shakey_1).
+# (https://registry.hub.docker.com/u/sreinhardt/honeynet/dockerfile),
+# on instructions outlined by M. Fields (@shakey_1) and 
+# on the installation script created by Payload Security
+# (https://github.com/PayloadSecurity/VxCommunity/blob/master/bash/thuginstallation.sh)
 #
 # To run this image after installing Docker, use a command like this:
 #
@@ -30,99 +32,65 @@
 # logging in the thug\src\Logging\logging.conf file.
 #
 
+
 FROM ubuntu:14.04
 MAINTAINER Lenny Zeltser (@lennyzeltser, www.zeltser.com)
 
 USER root
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
-    python2.7 \
-    python2.7-dev \
-    python-html5lib \
-    python-pefile \
-    python-lxml \
-    python-chardet \
-    python-httplib2 \
-    python-requests \
-    python-cssutils \
-    python-zope.interface \
-    graphviz \
-    graphviz-dev \
-    python-pyparsing \
-    python-pydot \
-    python-magic \
-    libboost1.54-dev \
-    python-networkx \
-    libboost-dev \
-    g++ \
+    python-socksipy \
     build-essential \
-    subversion \
-    scons \
-    git \
-    libboost-python-dev \
-    libboost-thread-dev \
-    libboost-system-dev \
+    python-dev \
     python-setuptools \
-    python-pip \
-    autoconf2.13 \
-    libtool \
-    libemu-dev \
-    systemtap-sdt-dev \
-    automake \
-    libpcre3 \
-    libpcre3-dev \
+    libboost-python-dev \
+    libboost-all-dev \
+    subversion \
     curl \
-    bison \
-    libffi-dev \
-    python-socksipy && \
+    python-pip \
+    libxml2-dev \
+    libxslt-dev \
+    git \
+    libtool \
+    graphviz-dev \
+    automake \
+    autoconf && \
   rm -rf /var/lib/apt/lists/*
-
-RUN pip install --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/" -q \
-      pygraphviz && \
-    pip install -q jsbeautifier \
-      rarfile \
-      beautifulsoup4 \
-      pefile \
-      six
-
-RUN groupadd -r thug && \
-  useradd -r -g thug -d /home/thug -s /sbin/nologin -c "Thug User" thug
-
-WORKDIR /home
-RUN git clone git://github.com/buffer/thug.git && \
-  svn checkout http://pyv8.googlecode.com/svn/trunk/ pyv8 && \
-  patch -p0 < thug/patches/PyV8-patch1.diff && \
-  cd pyv8 && \
-  python setup.py build && \
-  python setup.py install && \
-  cd .. && \
-  rm -rf pyv8 v8 && \
-  chmod a+x thug/src/thug.py && \
-  mkdir thug/logs && \
-  mkdir thug/files && \
-  sed -i 's/\tTrue/\tFalse/g' thug/src/Logging/logging.conf
 
 WORKDIR /home
 RUN git clone https://github.com/buffer/libemu.git && \
   cd libemu && \
   autoreconf -v -i && \
   export CFLAGS=-Wno-error && \
-  ./configure --prefix=/usr/local/libemu && \
+  ./configure --prefix=/opt/libemu && \
   make install && \
-  ldconfig -n /usr/local/libemu && \
+  ldconfig -n /opt/libemu && \
+  touch /etc/ld.so.conf.d/libemu.conf && \
+  echo "/opt/libemu/lib/" > /etc/ld.so.conf.d/libemu.conf && \
+  ldconfig && \
   cd .. && \
-  rm -rf libemu && \
-  
-  git clone git://github.com/buffer/pylibemu.git && \
-  cd pylibemu && \
-  python setup.py build && \
-  python setup.py install && \
-  cd .. && \
-  rm -rf pylibemu && \
-  echo /opt/libemu/lib/ >> /etc/ld.so.conf.d/libemu.conf && \
-  ldconfig
-  
-RUN curl -SL "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz" | tar -xzC . && \
+  rm -rf libemu
+
+RUN pip install -q jsbeautifier \
+      rarfile \
+      beautifulsoup4 \
+      pefile \
+      six \
+      html5lib \
+      chardet \
+      requests \
+      PySocks \
+      cssutils \
+      zope.interface \
+      pyparsing \
+      python-magic \
+      graphviz \
+      lxml \
+      pylibemu && \
+   pip install -q --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/" \
+      pygraphviz
+
+RUN curl -sSL "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz" | tar -xzC . && \
   cd yara-3.4.0 && \
   ./bootstrap.sh && \
   ./configure && \
@@ -135,15 +103,22 @@ RUN curl -SL "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz" | tar -xzC 
   rm -rf yara-3.4.0 && \
   ldconfig
 
-RUN curl -SL http://sourceforge.net/projects/ssdeep/files/ssdeep-2.12/ssdeep-2.12.tar.gz/download | \
-  tar -xzC .  && \
-  cd ssdeep-2.12 && \
-  ./configure && \
-  make install && \
-  cd .. && \
-  rm -rf ssdeep-2.12 && \
-  BUILD_LIB=1 pip install ssdeep && \
+RUN groupadd -r thug && \
+  useradd -r -g thug -d /home/thug -s /sbin/nologin -c "Thug User" thug
 
+WORKDIR /home
+RUN git clone https://github.com/buffer/pyv8.git && \
+  cd pyv8 && \
+  python setup.py build && \
+  python setup.py install && \
+  cd .. && \
+  rm -rf pyv8
+
+RUN git clone https://github.com/buffer/thug.git && \
+  chmod a+x thug/src/thug.py && \
+  mkdir thug/logs && \
+  mkdir thug/files && \
+  sed -i 's/\tTrue/\tFalse/g' thug/src/Logging/logging.conf && \
   chown -R thug:thug /home/thug
 
 USER thug
