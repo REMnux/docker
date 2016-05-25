@@ -2,7 +2,7 @@
 
 This Dockerfile represents a Docker image that encapsulates [Thug][1], a low-interaction honeyclient, which was created by Angelo Dell'Aera (angelodellaera).
 
-The file below is based on ideas from [Spenser Reinhardt's Dockerfile][2] and on instructions outlined by [M. Fields][3].
+The file below is based on ideas from [Spenser Reinhardt's Dockerfile][2], on instructions outlined by [M. Fields][3] and on the installation script created by [Payload Security][4].
 
 To run this image after installing Docker, use a command like this:
 
@@ -22,3 +22,4 @@ logging in the thug\src\Logging\logging.conf file.
   [1]: https://github.com/buffer/thug
   [2]: https://registry.hub.docker.com/u/sreinhardt/honeynet/dockerfile
   [3]: https://twitter.com/shakey_1
+  [4]: https://github.com/PayloadSecurity/VxCommunity/blob/master/bash/thuginstallation.sh
