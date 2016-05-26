@@ -104,11 +104,11 @@ RUN curl -sSL "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz" | tar -xzC
   ldconfig
 
 RUN curl -sSL https://github.com/REMnux/docker/raw/master/dependencies/ssdeep-2.13.tar.gz |  tar -xzC .  && \
-  cd ssdeep-2.12 && \
+  cd ssdeep-2.13 && \
   ./configure && \
   make install && \
   cd .. && \
-  rm -rf ssdeep-2.12 && \
+  rm -rf ssdeep-2.13 && \
   BUILD_LIB=1 pip install ssdeep
 
 RUN groupadd -r thug && \
