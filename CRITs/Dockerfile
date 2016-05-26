@@ -65,7 +65,7 @@ RUN sed -i 's/^\[supervisord\]$/&\nnodaemon\=true\nlogfile\=\/data\/log\/supervi
 
 # Retrieve ssdeeep v.2.13 via wget, verify known good hash and install ssdeep
 RUN cd /tmp && \
-  wget -O ssdeep-2.13.tar.gz "http://downloads.sourceforge.net/project/ssdeep/ssdeep-2.13/ssdeep-2.13.tar.gz?r=&ts=1463161883&use_mirror=iweb" && \
+  wget -O ssdeep-2.13.tar.gz https://github.com/REMnux/docker/raw/master/dependencies/ssdeep-2.13.tar.gz && \
   sha256sum ssdeep-2.13.tar.gz > sha256sum.out && \
   sha256sum -c sha256sum.out && \
 
