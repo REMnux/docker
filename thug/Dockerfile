@@ -103,6 +103,14 @@ RUN curl -sSL "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz" | tar -xzC
   rm -rf yara-3.4.0 && \
   ldconfig
 
+RUN curl -sSL https://github.com/REMnux/docker/raw/master/dependencies/ssdeep-2.13.tar.gz |  tar -xzC .  && \
+  cd ssdeep-2.12 && \
+  ./configure && \
+  make install && \
+  cd .. && \
+  rm -rf ssdeep-2.12 && \
+  BUILD_LIB=1 pip install ssdeep
+
 RUN groupadd -r thug && \
   useradd -r -g thug -d /home/thug -s /sbin/nologin -c "Thug User" thug
 
