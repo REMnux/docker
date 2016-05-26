@@ -54,6 +54,7 @@ RUN apt-get update && \
     libtool \
     graphviz-dev \
     automake \
+    libffi-dev \
     autoconf && \
   rm -rf /var/lib/apt/lists/*
 
