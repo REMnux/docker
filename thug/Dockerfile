@@ -55,6 +55,8 @@ RUN apt-get update && \
     graphviz-dev \
     automake \
     libffi-dev \
+    graphviz \
+    python-pygraphviz \
     autoconf && \
   rm -rf /var/lib/apt/lists/*
 
@@ -85,11 +87,8 @@ RUN pip install -q jsbeautifier \
       zope.interface \
       pyparsing \
       python-magic \
-      graphviz \
       lxml \
-      pylibemu && \
-   pip install -q --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/" \
-      pygraphviz
+      pylibemu
 
 RUN curl -sSL "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz" | tar -xzC . && \
   cd yara-3.4.0 && \
