@@ -1,4 +1,4 @@
-This Docker image encapsulates the [CyberChef analysis tool][1] by GCHQ,
+This Docker image encapsulates the [CyberChef multi-purpose analysis tool][1] by GCHQ,
 which is a web-based app for "encryption, encoding, compression and data analysis."
 
 To run this image in the background after installing Docker,
