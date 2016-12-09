@@ -14,7 +14,7 @@
 # temporary logon credentials, connect to https://localhost:8443 using your web browser.
 #
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 MAINTAINER Zod (@wzod)
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -23,8 +23,8 @@ ENV LC_ALL C
 USER root
 RUN apt-get -qq update && \
   apt-get install -y  software-properties-common && \
-  apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
-  echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | tee /etc/apt/sources.list.d/mongodb.list && \
+  apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6 && \
+  echo 'deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse' | tee /etc/apt/sources.list.d/mongodb.list && \
   apt-add-repository -y universe && \
   apt-get -qq update && apt-get install -y --fix-missing \
   build-essential \
@@ -47,6 +47,7 @@ RUN apt-get -qq update && \
   p7zip-full \
   python-dev \
   python-pip \
+  python-setuptools \
   swig \
   supervisor \
   wget \
@@ -65,7 +66,7 @@ RUN sed -i 's/^\[supervisord\]$/&\nnodaemon\=true\nlogfile\=\/data\/log\/supervi
 
 # Retrieve ssdeeep v.2.13 via wget, verify known good hash and install ssdeep
 RUN cd /tmp && \
-  wget -O ssdeep-2.13.tar.gz https://github.com/REMnux/docker/raw/master/dependencies/ssdeep-2.13.tar.gz && \
+  wget -O ssdeep-2.13.tar.gz http://ufpr.dl.sourceforge.net/project/ssdeep/ssdeep-2.13/ssdeep-2.13.tar.gz && \
   sha256sum ssdeep-2.13.tar.gz > sha256sum.out && \
   sha256sum -c sha256sum.out && \
 
