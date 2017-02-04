@@ -10,6 +10,9 @@
 # Before running CRITs, create the ~/crits-data directory and make it world-accessible
 # (“chmod a+xwr").
 #
+# After launching the container, give it some time to start up. Then, when you see the info about
+# temporary logon credentials, connect to https://localhost:8443 using your web browser.
+#
 
 FROM ubuntu:16.04
 MAINTAINER Zod (@wzod)
