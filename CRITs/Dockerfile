@@ -8,34 +8,35 @@
 # sudo docker run --rm -it -v ~/crits-data:/home/nonroot/workdir -p 8443:8443 remnux/crits 
 #
 # Before running CRITs, create the ~/crits-data directory and make it world-accessible
-# ("chmod a+xwr").
-#
-# After launching the container, give it some time to start up. Then, when you see the info about
-# temporary logon credentials, connect to https://localhost:8443 using your web browser.
+# (“chmod a+xwr").
 #
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 MAINTAINER Zod (@wzod)
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LC_ALL C
 
 USER root
-RUN apt-get -y install software-properties-common
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
+RUN apt-get -qq update && \
+  apt-get install -y software-properties-common && \
+  apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
   echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | tee /etc/apt/sources.list.d/mongodb.list && \
   apt-add-repository -y universe && \
   apt-get -qq update && apt-get install -y --fix-missing \
+  apache2 \
   build-essential \
   curl \
   git \
   libevent-dev \
   libz-dev \
+  libjpeg-dev \
   libfuzzy-dev \
   libldap2-dev \
   libpcap-dev \
   libpcre3-dev \
   libsasl2-dev \
+  libssl-dev \
   libtool \
   libxml2-dev \
   libxslt1-dev \
@@ -45,33 +46,19 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
   p7zip-full \
   python-dev \
   python-pip \
+  ssdeep \
   swig \
   supervisor \
-  wget \
-  unrar-free \
   upx \
   vim \
+  wget \
   zip \
-  libssl-dev \
-  apache2 \
   libapache2-mod-wsgi && \
   cp /etc/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf && \
   ldconfig
 
 # Setup supervisord to manage apache and mongod
 RUN sed -i 's/^\[supervisord\]$/&\nnodaemon\=true\nlogfile\=\/data\/log\/supervisord\.log\npidfile\=\/data\/run\/supervisord\.pid\n\n\[program\:apache2\]\ncommand\=\/bin\/bash\ \-c\ \"source \/etc\/apache2\/envvars\ \&\&\ exec\ \/usr\/sbin\/apache2\ \-DFOREGROUND\"\nuser\=nonroot\nstdout\_logfile\=\/data\/log\/supervisor\/\%\(program\_name\)s\.log\nstderr\_logfile\=\/data\/log\/supervisor\/\%\(program\_name\)s\.log\nautostart\=true\nautorestart\=true\n\n\[program\:mongod\]\ncommand\=\/usr\/bin\/mongod\nstdout\_logfile\=\/data\/log\/supervisor\/\%\(program\_name\)s\.log\nstderr\_logfile\=\/data\/log\/supervisor\/\%\(program\_name\)s\.log\nautostart\=true\nautorestart\=true\n/' /etc/supervisor/conf.d/supervisord.conf
-
-# Retrieve ssdeeep v.2.13 via wget, verify known good hash and install ssdeep
-RUN cd /tmp && \
-  wget -O ssdeep-2.13.tar.gz "http://sourceforge.net/projects/ssdeep/files/ssdeep-2.13/ssdeep-2.13.tar.gz/download" && \
-  sha256sum ssdeep-2.13.tar.gz > sha256sum.out && \
-  sha256sum -c sha256sum.out && \
-
-  tar vxzf ssdeep-2.13.tar.gz && \
-  cd ssdeep-2.13/ && \
-  ./configure && \
-  make && \
-  make install
 
 # Create nonroot account
 RUN groupadd -r nonroot && \
@@ -138,7 +125,7 @@ RUN cd /tmp && \
   sed -i -e :a -e '$d;N;2,3ba' -e 'P;D'  /etc/supervisor/conf.d/supervisord.conf && \
   sed -i 's/\/var/\/data/' /etc/supervisor/supervisord.conf && \
   sed -i 's/\$CWD/\/data\/log\//' /etc/supervisor/supervisord.conf && \
-  sed -i 's/\$CWD/\/data\/log\//' /etc/supervisor/conf.d/supervisord.conf 
+  sed -i 's/\$CWD/\/data\/log\//' /etc/supervisor/conf.d/supervisord.conf
 
 RUN ldconfig && \
   apt-get remove -y --purge build-essential libtool && \
@@ -155,4 +142,4 @@ WORKDIR /data/crits
 # Expose ports 8443 and 27017 from the container to the host
 EXPOSE 8443 27017
 
-ENTRYPOINT /usr/bin/supervisord --user=nonroot -c /etc/supervisor/conf.d/supervisord.conf & > /data/log/startup.log; sleep 5; rm /data/db/mongod.lock; /usr/bin/mongod --fork --logpath /data/crits/logs/mongodb.log --logappend --nohttpinterface --dbpath /data/db --smallfiles && python /data/crits/manage.py create_default_collections && python /data/crits/manage.py users -a -A -e "nonroot@crits.local" -f "Nonroot" -l "User" -o "REMnux" -u "nonroot" && python /data/crits/manage.py setconfig allowed_hosts "localhost" && printf "\n" && echo "To access CRITS user interface, go https://localhost:8443 and use the following credentials:" && printf "\n" && echo "Username: nonroot" && echo -n "Password: " && python /data/crits/manage.py users -u nonroot -r 2> /dev/null | grep ^New | awk -F:\  '{print $2}' && printf "\n" && echo "Please change the temporary password upon successful login to the web interface by clicking on 'Nonroot User' near the top left panel and selecting 'Change Password'." && printf "\n" && echo "If changes made to the CRITs application require a restart of the web server, run 'service apache2 stop' and supervisor will automatically restart the web server for you." && printf "\n" && /bin/bash
+ENTRYPOINT /usr/bin/supervisord --user=nonroot -c /etc/supervisor/conf.d/supervisord.conf & > /data/log/startup.log; sleep 5; rm /data/db/mongod.lock; /usr/bin/mongod --fork --logpath /data/crits/logs/mongodb.log --logappend --nohttpinterface --dbpath /data/db --smallfiles && python /data/crits/manage.py create_default_collections && python /data/crits/manage.py users -a -A -e "nonroot@crits.local" -f "Nonroot" -l "User" -o "REMnux" -u "nonroot" > /dev/null && python /data/crits/manage.py setconfig allowed_hosts "*" && printf "\n" && echo "To access CRITS user interface, go https://localhost:8443 and use the following credentials:" && printf "\n" && echo "Username: nonroot" && echo -n "Password: " && python /data/crits/manage.py users -u nonroot -r 2> /dev/null | grep ^New | awk -F:\  '{print $2}' && printf "\n" && echo "Please change the temporary password upon successful login to the web interface by clicking on 'Nonroot User' near the top left panel and selecting 'Change Password'." && printf "\n" && echo "If changes made to the CRITs application require a restart of the web server, run 'service apache2 stop' and supervisor will automatically restart the web server for you." && printf "\n" && /bin/bash
