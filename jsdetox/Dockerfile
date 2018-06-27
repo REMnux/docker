@@ -7,7 +7,7 @@
 # Then, connect to http://localhost:3000 using your web browser.
 #
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 MAINTAINER Lenny Zeltser (@lennyzeltser, www.zeltser.com)
 
 USER root
