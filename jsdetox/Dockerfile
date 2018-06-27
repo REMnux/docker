@@ -7,11 +7,13 @@
 # Then, connect to http://localhost:3000 using your web browser.
 #
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 MAINTAINER Lenny Zeltser (@lennyzeltser, www.zeltser.com)
 
 USER root
 RUN apt-get update && apt-get install -y \
+  curl \
+  gnupg2 \
   git \
   ruby \
   ruby-dev \
@@ -19,6 +21,11 @@ RUN apt-get update && apt-get install -y \
   zlib1g-dev \
   build-essential && \
   rm -rf /var/lib/apt/lists/*
+
+# Update ruby
+RUN curl -sSL https://rvm.io/mpapis.asc | gpg --import -
+RUN curl -L https://get.rvm.io | bash -s stable --ruby
+
 RUN groupadd -r nonroot && \
   useradd -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot && \
   mkdir /home/nonroot && \
