@@ -4,7 +4,7 @@ which is a web-based app for "encryption, encoding, compression and data analysi
 To run this image in the background after installing Docker,
 use the following command:
 
-`sudo docker run -d -p 8080:80 remnux/cyberchef`
+`sudo docker run -d -p 8080:8080 remnux/cyberchef`
 
 Then, connect to http://localhost:8080 using your web browser.
 To stop the container, use Docker's `ps` and `stop` commands.
