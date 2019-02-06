@@ -5,6 +5,8 @@ This Dockerfile represents a Docker image that encapsulates the [Viper][1] binar
 To run this image after installing Docker,  use a command like this to launch the Viper web interface, replacing "~/viper-workdir" with the path to the location of	your Viper Viper data directory:	
 
     sudo docker run --rm -p 8080:8080 -v ~/viper-workdir:/home/nonroot/workdir remnux/viper
+    
+The username is `admin` and the password `admin`.
 
 Before running Viper, create the  ~/viper-workdir and make it world-accessible ("`chmod a+xwr`").
 
