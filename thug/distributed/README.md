@@ -18,7 +18,7 @@ To run this image after installing Docker, you have a number of options:
 
 - This is essentially a combination of both of the above, allowing you entry into the docker, and storage of log files in your host environment.
 
-To support distributed operations and MongoDB output, install the following packages into the image using "apt-get mongodb mongodb-dev python-pymongo rabbitmq-server python-pika"
+This docker provides the capability for distributed operations and MongoDB output, containing the following packages: mongodb, mongodb-dev, python-pymongo, rabbitmq-server, python-pika.
 
   [1]: https://github.com/buffer/thug
   [2]: https://registry.hub.docker.com/u/sreinhardt/honeynet/dockerfile

@@ -10,7 +10,6 @@
 # and allow you use run the command 'rekall' with any parameters required.
 
 FROM ubuntu:bionic
-
 LABEL version="1.4"
 LABEL description="Rekall docker based on Ubuntu 18.04 LTS"
 LABEL maintainer="https://github.com/digitalsleuth/rekall-docker"

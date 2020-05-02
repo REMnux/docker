@@ -16,15 +16,15 @@
 #
 #   This will enter you into the docker where you can run "thug" with 
 #   the desired parameters (such as -F to enable file logging).
-#
+# 
 # sudo docker run --rm -it -v <local_folder>:/tmp/thug/logs --entrypoint "/bin/bash" remnux/thug
 #
 #   This is essentially a combination of both of the above, allowing you entry into 
 #   the docker, and storage of log files in your host environment.
 #
-# To support distributed operations and MongoDB output, install the following
-# packages into the image using "apt-get mongodb mongodb-dev python-pymongo
-# rabbitmq-server python-pika"
+# This docker provides the capability for distributed operations and MongoDB output, 
+# containing the following packages: mongodb, mongodb-dev, python-pymongo,
+# rabbitmq-server, python-pika.
 #
 # This file was originally based on ideas from Spenser Reinhardt's Dockerfile
 # (https://registry.hub.docker.com/u/sreinhardt/honeynet/dockerfile),
@@ -64,8 +64,13 @@ RUN apt-get update && \
     libjpeg-dev \
     libffi-dev \
     pkg-config \
-    autoconf && \
-  rm -rf /var/lib/apt/lists/*
+    autoconf  \
+    mongodb  \
+    mongodb-dev  \
+    python-pymongo  \
+    rabbitmq-server \
+    python-pika && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip setuptools pytesseract
 WORKDIR /usr/local/src
