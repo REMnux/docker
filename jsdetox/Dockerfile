@@ -3,12 +3,17 @@
 # from http://www.relentless-coding.com/projects/jsdetox
 #
 # To run this image after installing Docker, use the following command:
-# sudo docker run --rm -p 3000:3000 remnux/jsdetox
+# sudo docker run -d --rm --name jsdetox -p 3000:3000 remnux/jsdetox
 # Then, connect to http://localhost:3000 using your web browser.
-#
+# To stop jsdetox, use: 
+# sudo docker stop jsdetox
+# 
+# Updated for Ubuntu 18.04
+# Changes: Update version of therubyracer from 0.9.8 to 0.12.3
 
-FROM ubuntu:14.04
-MAINTAINER Lenny Zeltser (@lennyzeltser, www.zeltser.com)
+FROM ubuntu:18.04
+LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
+LABEL updated="1 May 2020"
 
 USER root
 RUN apt-get update && apt-get install -y \
@@ -30,6 +35,7 @@ RUN git clone https://github.com/svent/jsdetox.git
 
 USER root
 WORKDIR /home/nonroot/jsdetox
+RUN sed "s/, '0.9.8'/, '0.12.3'/g" -i Gemfile
 RUN bundle install
 
 USER nonroot
