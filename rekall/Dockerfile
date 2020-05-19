@@ -1,6 +1,16 @@
-FROM ubuntu:bionic
+# This is a rekall docker built on Ubuntu 18.04 LTS
+# The rekall software/source can be found either at
+# http://www.rekall-forensic.com or
+# https://github.com/google/rekall
+#
+# To use the docker, it is recommended to use the following command
+#  sudo docker run --rm -it -v <local_directory>:/home/nonroot/files digitalsleuth/rekall-docker /bin/bash
+#
+# This will load you into the docker as the 'nonroot' user,
+# and allow you use run the command 'rekall' with any parameters required.
 
-LABEL version="1.3"
+FROM ubuntu:bionic
+LABEL version="1.4"
 LABEL description="Rekall docker based on Ubuntu 18.04 LTS"
 LABEL maintainer="https://github.com/digitalsleuth/rekall-docker"
 
