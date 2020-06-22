@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 
 RUN \
+  export "LANG=en_US.UTF-8" && \
   apt-get update && \
   apt-get install -y wget gnupg && \
   wget -O - http://repo.saltstack.com/apt/ubuntu/18.04/amd64/2019.2/SALTSTACK-GPG-KEY.pub | apt-key add - && \
