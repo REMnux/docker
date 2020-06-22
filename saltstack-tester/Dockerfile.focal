@@ -1,6 +1,7 @@
 FROM ubuntu:20.04
 
 RUN \
+  export "LANG=en_US.UTF-8" && \
   apt-get update && \
   apt-get install -y wget gnupg && \
   wget -O - http://repo.saltstack.com/py3/ubuntu/20.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add - && \
