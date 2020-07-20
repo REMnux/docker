@@ -4,7 +4,7 @@
 # https://github.com/google/rekall
 #
 # To use the docker, it is recommended to use the following command
-#  sudo docker run --rm -it -v <local_directory>:/home/nonroot/files digitalsleuth/rekall-docker /bin/bash
+#  sudo docker run --rm -it -v <local_directory>:/home/nonroot/files remnux/rekall /bin/bash
 #
 # This will load you into the docker as the 'nonroot' user,
 # and allow you use run the command 'rekall' with any parameters required.
@@ -12,7 +12,7 @@
 FROM ubuntu:bionic
 LABEL version="1.4"
 LABEL description="Rekall docker based on Ubuntu 18.04 LTS"
-LABEL maintainer="https://github.com/digitalsleuth/rekall-docker"
+LABEL maintainer="https://github.com/digitalsleuth"
 
 USER root
 RUN apt-get update && apt-get install -y \

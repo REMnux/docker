@@ -1,0 +1,48 @@
+#
+# This Docker image encapsulates the REMnux v7 distro. For details
+# about REMnux, including how you can run it on a physical system
+# or as a virtual machine, see https://REMnux.org.
+#
+# You can run this image as a container using a command such as:
+#
+# docker run --rm -it remnux/remnux-distro /bin/bash
+#
+# To map a local directory into the container's /home/remnux/files directory,
+# you could use a command such as this after making your local directory
+# world-writeable (chmod a+w) and supplying the appropriate directory name:
+#
+# docker run --rm -it -v <local_directory>:/home/remnux/files remnux/remnux-distro /bin/bash
+#
+# If you'd like to access the container using SSH,  you can invoke it like this by
+# mapping your local TCP port 22 to the container's internal TCP port 22:
+#
+# docker run --rm -it -p 22:22 remnux/remnux-distro
+#
+# If you're going to run this container in a remote cloud, be sure to change the default
+# password and otherwise harden the system according to your requirements.
+#
+
+FROM ubuntu:18.04
+
+LABEL description="REMnux® is a Linux toolkit for reverse-engineering and analyzing malicious software."
+LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
+
+ENV TERM linux
+ENV DEBIAN_FRONTEND noninteractive
+
+USER root
+RUN apt-get update && \
+    apt-get install -y wget gnupg git && \
+    wget -nv -O - https://repo.saltstack.com/apt/ubuntu/18.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add - && \
+    echo deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/18.04/amd64/3000 bionic main > /etc/apt/sources.list.d/saltstack.list && \
+    apt-get update && \
+    apt-get install -y salt-minion
+
+RUN git clone https://github.com/REMnux/salt-states.git /srv/salt && \
+    salt-call -l info --local state.sls remnux.cloud pillar='{"remnux_user": "remnux"}' && \
+    rm -rf /srv
+
+USER remnux
+ENV HOME /home/remnux
+WORKDIR /home/remnux
+ENV USER remnux
