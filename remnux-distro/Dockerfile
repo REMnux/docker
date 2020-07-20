@@ -31,7 +31,6 @@ LABEL description="REMnux® is a Linux toolkit for reverse-engineering and analy
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
 
 ENV TERM linux
-ENV DEBIAN_FRONTEND noninteractive
 
 USER root
 RUN apt-get update && \
@@ -45,11 +44,12 @@ RUN git clone https://github.com/REMnux/salt-states.git /srv/salt && \
     salt-call -l info --local state.sls remnux.cloud pillar='{"remnux_user": "remnux"}' && \
     rm -rf /srv
 
-RUN mkdir /run/sshd
-EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
-
 USER remnux
 ENV HOME /home/remnux
 WORKDIR /home/remnux
 ENV USER remnux
+
+USER root
+RUN mkdir /var/run/sshd
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
