@@ -8,18 +8,21 @@
 # docker run --rm -it remnux/remnux-distro /bin/bash
 #
 # To map a local directory into the container's /home/remnux/files directory,
-# you could use a command such as this after making your local directory
-# world-writeable (chmod a+w) and supplying the appropriate directory name:
+# you could use a command lile this by supplying the appropriate directory name:
 #
 # docker run --rm -it -v <local_directory>:/home/remnux/files remnux/remnux-distro /bin/bash
 #
 # If you'd like to access the container using SSH,  you can invoke it like this by
-# mapping your local TCP port 22 to the container's internal TCP port 22:
+# mapping your local TCP port 22 to the container's internal TCP port 22. In this example,
+# the container will remain active in the background:
 #
-# docker run --rm -it -p 22:22 remnux/remnux-distro
+# docker run -p 22:22 remnux/remnux-distro
 #
 # If you're going to run this container in a remote cloud, be sure to change the default
 # password and otherwise harden the system according to your requirements.
+#
+# If you're planning to use Cutter inside the container, you'll need to include the
+# --privileged parameter when invoking Docker.
 #
 
 FROM ubuntu:18.04
@@ -41,6 +44,10 @@ RUN apt-get update && \
 RUN git clone https://github.com/REMnux/salt-states.git /srv/salt && \
     salt-call -l info --local state.sls remnux.cloud pillar='{"remnux_user": "remnux"}' && \
     rm -rf /srv
+
+RUN mkdir /run/sshd
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
 
 USER remnux
 ENV HOME /home/remnux
