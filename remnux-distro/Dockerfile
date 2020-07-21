@@ -30,6 +30,7 @@ FROM ubuntu:18.04
 LABEL description="REMnux® is a Linux toolkit for reverse-engineering and analyzing malicious software."
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
 
+ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 USER root
