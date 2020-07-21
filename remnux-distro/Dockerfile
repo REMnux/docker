@@ -31,26 +31,25 @@ LABEL description="REMnux® is a Linux toolkit for reverse-engineering and analy
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
 
 USER root
-ENV TERM linux
-ENV DEBIAN_FRONTEND noninteractive
-ENV DEBIAN_FRONTEND newt
 
-RUN apt-get update && \
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
     apt-get install -y wget gnupg git && \
     wget -nv -O - https://repo.saltstack.com/apt/ubuntu/18.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add - && \
     echo deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/18.04/amd64/3000 bionic main > /etc/apt/sources.list.d/saltstack.list && \
     apt-get update && \
-    apt-get install -y salt-minion
-
-RUN git clone https://github.com/REMnux/salt-states.git /srv/salt && \
+    apt-get install -y salt-minion && \
+    git clone https://github.com/REMnux/salt-states.git /srv/salt && \
     salt-call -l info --local state.sls remnux.cloud pillar='{"remnux_user": "remnux"}' && \
-    rm -rf /srv
+    rm -rf /srv && \
+    unset DEBIAN_FRONTEND
 
-ENV DEBIAN_FRONTEND dialog
 USER remnux
+ENV TERM linux
 ENV HOME /home/remnux
-WORKDIR /home/remnux
 ENV USER remnux
+WORKDIR /home/remnux
+
 USER root
 RUN mkdir /var/run/sshd
 EXPOSE 22
