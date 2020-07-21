@@ -16,7 +16,7 @@
 # mapping your local TCP port 22 to the container's internal TCP port 22. In this example,
 # the container will remain active in the background:
 #
-# docker run -p 22:22 remnux/remnux-distro
+# docker run -d -p 22:22 remnux/remnux-distro
 #
 # If you're going to run this container in a remote cloud, be sure to change the default
 # password and otherwise harden the system according to your requirements.
@@ -30,10 +30,11 @@ FROM ubuntu:18.04
 LABEL description="REMnux® is a Linux toolkit for reverse-engineering and analyzing malicious software."
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV TERM linux
-
 USER root
+ENV TERM linux
+ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND newt
+
 RUN apt-get update && \
     apt-get install -y wget gnupg git && \
     wget -nv -O - https://repo.saltstack.com/apt/ubuntu/18.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add - && \
@@ -45,11 +46,11 @@ RUN git clone https://github.com/REMnux/salt-states.git /srv/salt && \
     salt-call -l info --local state.sls remnux.cloud pillar='{"remnux_user": "remnux"}' && \
     rm -rf /srv
 
+ENV DEBIAN_FRONTEND dialog
 USER remnux
 ENV HOME /home/remnux
 WORKDIR /home/remnux
 ENV USER remnux
-
 USER root
 RUN mkdir /var/run/sshd
 EXPOSE 22
