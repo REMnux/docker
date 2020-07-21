@@ -44,13 +44,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     rm -rf /srv && \
     unset DEBIAN_FRONTEND
 
-USER remnux
 ENV TERM linux
-ENV HOME /home/remnux
-ENV USER remnux
 WORKDIR /home/remnux
 
-USER root
 RUN mkdir /var/run/sshd
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
