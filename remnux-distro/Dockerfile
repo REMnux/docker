@@ -35,8 +35,8 @@ USER root
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install -y wget gnupg git && \
-    wget -nv -O - https://repo.saltstack.com/apt/ubuntu/18.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add - && \
-    echo deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/18.04/amd64/3000 bionic main > /etc/apt/sources.list.d/saltstack.list && \
+    wget -nv -O - https://repo.saltstack.com/py3/ubuntu/18.04/amd64/3001/SALTSTACK-GPG-KEY.pub | apt-key add - && \
+    echo deb [arch=amd64] http://repo.saltstack.com/py3/ubuntu/18.04/amd64/3001 bionic main > /etc/apt/sources.list.d/saltstack.list && \
     apt-get update && \
     apt-get install -y salt-minion && \
     git clone https://github.com/REMnux/salt-states.git /srv/salt && \
