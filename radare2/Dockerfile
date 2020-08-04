@@ -12,10 +12,9 @@
 #
 # To run this image after installing Docker, use the command below, replacing
 # "~/workdir" with the path to your working directory on the underlying host.
-# Before running the docker, create ~/workdir on your host and make it
-# world-accessible ("chmod a+xwr").
+# Before running the docker, create ~/workdir on your host.
 #
-# sudo docker run --rm -it --cap-drop=ALL --cap-add=SYS_PTRACE -v ~/workdir:/home/nonroot/workdir remnux/radare2
+# docker run --rm -it --cap-drop=ALL --cap-add=SYS_PTRACE -v ~/workdir:/home/nonroot/workdir remnux/radare2
 #
 # Then run "r2" or other Radare2 commands inside the container.
 #
