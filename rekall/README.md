@@ -6,6 +6,6 @@ This Dockerfile represents a Docker image that encapsulates the [Rekall Memory F
 
 then run "`rekall`" in the container with the desired parameters.
 
-Before running the command above, you can create the desired <local_directory> on your host and make it world-accessible (e.g., "`chmod a+xwr ~/files`").
+Before running the command above, you can create the desired <local_directory> on your host.
 
   [1]: http://www.rekall-forensic.com
