@@ -44,7 +44,7 @@ RUN python3 -m pip install --upgrade setuptools pip wheel readline future==0.16.
   apt-get clean -y
 
 RUN groupadd -r nonroot && \
-  useradd -m -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot && \
+  useradd -m -r -g nonroot -d /home/nonroot -s /usr/sbin/nologin -c "Nonroot User" nonroot && \
   mkdir -p /home/nonroot/files && \
   chown -R nonroot:nonroot /home/nonroot && \
   usermod -a -G sudo nonroot && echo 'nonroot:nonroot' | chpasswd
