@@ -96,7 +96,7 @@ RUN pip3 install thug && \
     cp conf/thug.conf /etc/thug
 
 RUN groupadd -r thug && \
-    useradd -m -d /home/thug -g thug -s /sbin/nologin -c "Thug User" thug && \
+    useradd -m -d /home/thug -g thug -s /usr/sbin/nologin -c "Thug User" thug && \
     mkdir -p /tmp/thug/logs && \
     chown -R thug:thug /home/thug /tmp/thug/logs && \
     usermod -a -G sudo thug &&  echo 'thug:thug' | chpasswd
