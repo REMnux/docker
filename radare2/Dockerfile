@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install -y \
   rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r nonroot && \
-  useradd -m -d /home/nonroot -g nonroot -s /sbin/nologin -c "Nonroot User" nonroot && \
+  useradd -m -d /home/nonroot -g nonroot -s /usr/sbin/nologin -c "Nonroot User" nonroot && \
   mkdir -p /home/nonroot/workdir && \
   chown -R nonroot:nonroot /home/nonroot && \
   usermod -a -G sudo nonroot && echo 'nonroot:nonroot' | chpasswd
