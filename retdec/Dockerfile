@@ -46,7 +46,7 @@ mv upx-3.96-amd64_linux/upx /usr/local/bin && \
 rm -rf upx-3.96-amd64_linux*
 
 RUN groupadd -r retdec && \
-    useradd -m -d /home/retdec -g retdec -s /sbin/nologin -c "RETDEC User" retdec && \
+    useradd -m -d /home/retdec -g retdec -s /usr/sbin/nologin -c "RETDEC User" retdec && \
     mkdir -p /tmp/files && \
     chown -R retdec:retdec /home/retdec /tmp/files && \
     usermod -a -G sudo retdec && echo 'retdec:retdec' | chpasswd
