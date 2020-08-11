@@ -2,7 +2,7 @@
 
 This Dockerfile represents a Docker image that encapsulates the [Viper][1] binary analysis and management framework by Claudio Guarnieri ([@botherder][2] - [homepage][3]).
 
-To run this image after installing Docker, use a command like this to launch the docker, replacing "~/workdir" with the path to the location of the data to analyse:
+To run this image after installing Docker, use a command like this to launch the container, replacing "~/workdir" with the path to the location of the data to analyse:
 
     sudo docker run -it --rm -v ~/workdir:/home/nonroot/workdir remnux/viper
 
