@@ -1,18 +1,17 @@
 # Viper Binary Analysis and Management Framework
 
-This Dockerfile represents a Docker image that encapsulates the [Viper][1] binary analysis and management framework by Claudio Guarnieri ([@botherder][2]).
+This Dockerfile represents a Docker image that encapsulates the [Viper][1] binary analysis and management framework by Claudio Guarnieri ([@botherder][2] - [homepage][3]).
 
-To run this image after installing Docker,  use a command like this to launch the Viper web interface, replacing "~/viper-workdir" with the path to the location of	your Viper Viper data directory:	
+To run this image after installing Docker, use a command like this to launch the docker, replacing "~/workdir" with the path to the location of the data to analyse:
 
-    sudo docker run --rm -p 8080:8080 -v ~/viper-workdir:/home/nonroot/workdir remnux/viper
-    
-The username is `admin` and the password `admin`.
+    sudo docker run -it --rm -v ~/workdir:/home/nonroot/workdir remnux/viper
 
-Before running Viper, create the  ~/viper-workdir and make it world-accessible ("`chmod a+xwr`").
+To run the 'clamav' plugin, the clamav-daemon must be running. You can enable this by running:
 
-If you want to launch the Viper command-line tool instead of its web interface, run Bash in the container like this, then issue the desired ./viper-cli command:
-	
-    sudo docker run --rm -it -v ~/viper-workdir:/home/nonroot/workdir remnux/viper bash
+    sudo service clamav-daemon start
 
-  [1]: http://viper.li
+Before running Viper, create the  ~/workdir and make it world-accessible ("`chmod a+xwr`").
+
+  [1]: https://github.com/viper-framework/viper
   [2]: https://twitter.com/botherder
+  [3]: https://nex.sx/

@@ -1,87 +1,74 @@
+# Name: Viper
+# Website: https://github.com/viper-framework/viper
+# Description: Organize and query a collection of malware samples.
+# Category: Gather and Analyze Data
+# Author: Claudio Guarnieri: https://nex.sx
+# License: BSD 3-Clause License: https://github.com/viper-framework/viper/blob/master/LICENSE
+# Notes: viper
 #
 # This Docker image encapsulates the Viper binary analysis and management
-# framework by Claudio Guarnieri from http://viper.li	
+# framework by Claudio Guarnieri.
 #	
 # To run this image after installing Docker, use a command like this to launch the	
-# Viper web interface, replacing "~/viper-workdir" with the path to the location of	
-# your Viper Viper data directory:	
+# docker, replacing "~/workdir" with the path to the location of the data to analyse:	
 #	
-# sudo docker run --rm -p 8080:8080 -v ~/viper-workdir:/home/nonroot/workdir remnux/viper	
-#
-# The username is "admin" and the password "admin".
-#	
-# Before running Viper, create the  ~/viper-workdir and make it world-accessible ("chmod a+xwr").	
-#	
-# If you want to launch the Viper command-line tool instead of its web interface, run	
-# Bash in the container like this, then issue the desired ./viper-cli command:	
-#	
-# sudo docker run --rm -it -v ~/viper-workdir:/home/nonroot/workdir remnux/viper bash
-#
+# sudo docker run -it --rm -v ~/workdir:/home/nonroot/workdir remnux/viper	
+# To run the 'clamav' plugin, the clamav-daemon must be running. You can enable this by
+# running: sudo service clamav-daemon start
+# Before running Viper, create the  ~/workdir and make it world-accessible ("chmod a+xwr").	
 
 FROM ubuntu:18.04
-MAINTAINER @axpatito
+LABEL version="2.0"
+LABEL description="Viper Framework Docker"
+LABEL maintainer="https://github.com/digitalsleuth"
+ENV LANG C.UTF-8
+ENV LANGUAGE C.UTF-8
+ENV LC_ALL C.UTF-8
 
 USER root
-RUN apt-get update -yqq && apt-get install -yqq --no-install-recommends \
+RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   git \
+  sudo \
   gcc \
   python3-dev \
   python3-pip \
   libssl-dev \
-  swig \
   libffi-dev \
-  ssdeep \
-  libfuzzy-dev \
-  unrar \
+  unrar-free \
   p7zip-full \
-  exiftool \
-  clamav-daemon \
   tor \
   libdpkg-perl \
-  bsdmainutils
+  libusb-1.0-0 \
+  libimage-exiftool-perl \
+  swig \
+  ssdeep \
+  clamav-daemon \
+  libfuzzy-dev && \
+  rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install setuptools wheel --upgrade && \
+  python3 -m pip install viper-framework && \
+  freshclam
 
 RUN groupadd -r nonroot && \
-  useradd -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot && \
-  mkdir /home/nonroot && \
-  chown -R nonroot:nonroot /home/nonroot
+  useradd -m -r -g nonroot -d /home/nonroot -s /usr/sbin/nologin -c "Nonroot User" nonroot && \
+  mkdir -p /home/nonroot/workdir && mkdir /home/nonroot/.viper && \
+  chown -R nonroot:nonroot /home/nonroot && \
+  usermod -a -G sudo nonroot && echo 'nonroot:nonroot' | chpasswd
 
 USER nonroot
-WORKDIR /home/nonroot
-RUN git clone https://github.com/viper-framework/viper && \
-  cd viper && \
-  rm viper/modules/clamav.py && \
-  git submodule init && \
-  git submodule update && \
-  mkdir /home/nonroot/workdir
+WORKDIR /home/nonroot/.viper
+RUN git clone https://github.com/viper-framework/viper-modules.git modules
+WORKDIR /home/nonroot/.viper/modules
+RUN git submodule init && git submodule update && \
+  sed -i 's/verify-sigs @ //g' requirements.txt && \
+  sed -i 's/PyMISPGalaxies @ //g' requirements.txt
 
-USER root
-WORKDIR /home/nonroot/viper
-RUN pip3 install setuptools wheel --upgrade
-RUN pip3 install .
-WORKDIR /tmp
-RUN apt-get install -yqq curl automake libtool make gcc libssl-dev libjansson-dev libmagic-dev
-RUN curl -SL "https://github.com/VirusTotal/yara/archive/v3.8.1.tar.gz" | tar -xzC . && \
-  cd yara-3.8.1 && \
-  ./bootstrap.sh && \
-  ./configure --enable-cuckoo --enable-magic --enable-dotnet && \
-  make && \
-  make install && \
-  ldconfig && \
-  pip3 install yara-python
-RUN touch /var/log/viper.log && \
-  chown nonroot /var/log/viper.log && \
-  chgrp nonroot /var/log/viper.log && \
-  mkdir -p /etc/viper && \
-  chown nonroot /etc/viper && \
-  chgrp nonroot /etc/viper
+WORKDIR /home/nonroot/.viper/modules
+RUN python3 -m pip install -U -r requirements.txt
 
-USER nonroot
-EXPOSE 8080
-WORKDIR /home/nonroot/viper
-RUN cp viper.conf.sample /etc/viper/viper.conf && \
-  sed -i 's/storage_path.*$/storage_path=\/home\/nonroot\/workdir/' /etc/viper/viper.conf && \
-  sed -i 's/log_file.*$/log_file=\/var\/log\/viper.log/' /etc/viper/viper.conf && \
-  sed -i 's/host = .*$/host = 0.0.0.0/' /etc/viper/viper.conf && \
-  sed -i 's/#admin_username.*$/admin_username=admin/' /etc/viper/viper.conf && \
-  sed -i 's/#admin_password.*$/admin_password=admin/' /etc/viper/viper.conf
-CMD viper-web
+ENV HOME /home/nonroot
+WORKDIR /home/nonroot/workdir
+VOLUME ["/home/nonroot/workdir"]
+ENV USER nonroot
+CMD ["/bin/bash"]
