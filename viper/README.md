@@ -6,7 +6,7 @@ To run this image after installing Docker, use a command like this to launch the
 
     sudo docker run -it --rm -v ~/workdir:/home/nonroot/workdir remnux/viper
 
-To run the 'clamav' plugin, the clamav-daemon must be running. You can enable this by running:
+To run the "clamav" Viper plugin, the clamav-daemon must be running. You can enable this by running inside the container:
 
     sudo service clamav-daemon start
 
