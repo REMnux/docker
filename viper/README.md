@@ -10,8 +10,6 @@ To run the 'clamav' plugin, the clamav-daemon must be running. You can enable th
 
     sudo service clamav-daemon start
 
-Before running Viper, create the  ~/workdir and make it world-accessible ("`chmod a+xwr`").
-
   [1]: https://github.com/viper-framework/viper
   [2]: https://twitter.com/botherder
   [3]: https://nex.sx/
