@@ -11,7 +11,8 @@
 #
 #   docker run -it --rm -v ~/workdir:/home/nonroot/workdir remnux/ciphey -f input.txt 
 #
-# Or for a text input: 
+# Or for a text input:
+#
 #   docker run -it --rm remnux/ciphey "=MXazlHbh5WQgUmchdHbh1EIy9mZgQXarx2bvRFI4VnbpxEIBBiO4VnbNVkU"
 #
 # The remnux/ciphey image is hosted on its Docker Hub page.
