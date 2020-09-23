@@ -34,7 +34,7 @@
 
 FROM ubuntu:18.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="31 Jul 2020"
+LABEL updated="22 Sep 2020"
 LABEL updated_by="digitalsleuth"
 
 USER root
@@ -70,7 +70,7 @@ RUN apt-get update && \
 RUN pip3 install --upgrade pip setuptools pytesseract
 WORKDIR /usr/local/src
 
-RUN pip3 install https://github.com/area1/stpyv8/releases/download/v8.4.371.19/stpyv8-8.4.371.19-cp36-cp36m-linux_x86_64.whl 
+RUN pip3 install https://github.com/area1/stpyv8/releases/download/v8.5.210.26/stpyv8-8.5.210.26-cp36-cp36m-linux_x86_64.whl 
 
 RUN git clone --depth 1 https://github.com/buffer/libemu.git && \
     cd libemu && \
