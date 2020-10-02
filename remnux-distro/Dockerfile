@@ -43,7 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     salt-call -l info --local state.sls remnux.cloud pillar='{"remnux_user": "remnux"}' && \
     rm -rf /srv && \
     rm -rf /var/cache/salt/* && \
-    rm -rf /root/.cache/&* && \
+    rm -rf /root/.cache/* && \
     unset DEBIAN_FRONTEND
 
 ENV TERM linux
