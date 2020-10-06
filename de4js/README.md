@@ -1,4 +1,4 @@
-# de4js Javascript Deobfuscator and Unpacker
+# de4js JavaScript Deobfuscator and Unpacker
 
 This Dockerfile represents a Docker image that encapsulates the [de4js][1] Javascript deobfuscation tool.
 It's based on the original instructions documented in the official [GitHub][2] repository.
