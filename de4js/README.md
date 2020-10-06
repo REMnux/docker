@@ -13,5 +13,5 @@ It's important to remember the trailing slash after the above URL
 
 To stop de4js, use `sudo docker stop de4js`.
 
-  [1]: https://lelinhtinh.github.io/de4js/
+  [1]: https://github.com/lelinhtinh/de4js
   [2]: https://github.com/lelinhtinh/de4js/blob/master/Dockerfile
