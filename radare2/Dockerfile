@@ -6,7 +6,7 @@
 # License: GNU Lesser General Public License (LGPL) v3: https://github.com/radareorg/radare2/blob/master/COPYING
 # Notes: r2, rasm2, rabin2, rahash2, rafind2, r2agent
 #
-# This Dockerfile is modified for use in Ubuntu 18.04, but is based on 
+# This Dockerfile is modified for use in Ubuntu 20.04, but is based on 
 # the instructions documented in the official Radare2 Dockerfile file at
 # https://github.com/radareorg/radare2/blob/master/Dockerfile
 #
@@ -22,10 +22,10 @@
 # To access this, add '-p 8080:8080' to the above docker command (before 'remnux/radare2')
 # Then browse to your http://YOUR_IP:8080. 
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="4 Aug 2020"
-LABEL updated_by="digitalsleuth"
+LABEL updated="8 Dec 2020"
+LABEL updated_by="Lenny Zeltser"
 ENV LANG C.UTF-8
 ENV LANGUAGE C.UTF-8
 ENV LC_ALL C.UTF-8
