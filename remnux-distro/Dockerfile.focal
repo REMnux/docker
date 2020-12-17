@@ -1,6 +1,6 @@
 #
-# This Docker image encapsulates the REMnux v7 distro. For details
-# about REMnux, including how you can run it on a physical system
+# This Docker image encapsulates the REMnux v7 distro on Ubuntu 20.04 (focal).
+# For details about REMnux, including how you can run it on a physical system
 # or as a virtual machine, see https://REMnux.org.
 #
 # You can run this image as a container using a command such as:
@@ -25,7 +25,7 @@
 # --privileged parameter when invoking Docker.
 #
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 LABEL description="REMnux® is a Linux toolkit for reverse-engineering and analyzing malicious software."
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
@@ -35,8 +35,8 @@ USER root
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install -y wget gnupg git && \
-    wget -nv -O - https://repo.saltstack.com/py3/ubuntu/18.04/amd64/3001/SALTSTACK-GPG-KEY.pub | apt-key add - && \
-    echo deb [arch=amd64] http://repo.saltstack.com/py3/ubuntu/18.04/amd64/3001 bionic main > /etc/apt/sources.list.d/saltstack.list && \
+    wget -nv -O - https://repo.saltstack.com/py3/ubuntu/20.04/amd64/3001/SALTSTACK-GPG-KEY.pub | apt-key add - && \
+    echo deb [arch=amd64] http://repo.saltstack.com/py3/ubuntu/20.04/amd64/3001 focal main > /etc/apt/sources.list.d/saltstack.list && \
     apt-get update && \
     apt-get install -y salt-minion && \
     git clone https://github.com/REMnux/salt-states.git /srv/salt && \
