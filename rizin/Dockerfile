@@ -107,4 +107,5 @@ RUN rz-pm init && \
   rz-pm update && \
   chown -R nonroot:nonroot /home/nonroot/.config
 
+EXPOSE 8080
 CMD ["/bin/bash"]
