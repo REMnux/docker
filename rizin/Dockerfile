@@ -33,55 +33,54 @@ ENV LC_ALL C.UTF-8
 # Rizin branch version
 ARG RZ_VERSION=dev
 
+# rz-pipe python version
+ARG RZ_PIPE_PY_VERSION=master
+
 ARG with_arm32_as
 ARG with_arm64_as
 ARG with_ppc_as
 
-ENV RZ_VERSION ${RZ_VERSION}
+ENV RZ_PIPE_PY_VERSION ${RZ_PIPE_PY_VERSION}
 
 RUN echo -e "Building versions:\n\
-  RZ_VERSION=$RZ_VERSION"
-
-# Build rizin in a volume to minimize space used by build
-VOLUME ["/mnt"]
+	RZ_PIPE_PY_VERSION=${RZ_PIPE_PY_VERSION}"
 
 USER root
-# Install all build dependencies
-# Install bindings
-# Build and install rizin on master branch
-# Remove all build dependencies
-# Cleanup
-RUN DEBIAN_FRONTEND=noninteractive dpkg --add-architecture i386 && \
-  apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   curl \
-  wget \
-  gcc \
-  git \
-  bison \
-  pkg-config \
-  make \
-  glib-2.0 \
-  libc6:i386 \
-  libncurses5:i386 \
-  libstdc++6:i386 \
-  gnupg2 \
-  python3-pip \
-  ${with_arm64_as:+binutils-aarch64-linux-gnu} \
-  ${with_arm32_as:+binutils-arm-linux-gnueabi} \
-  ${with_ppc_as:+binutils-powerpc64le-linux-gnu} && \
-  pip3 install 'git+https://github.com/rizinorg/rz-pipe#egg=rzpipe&subdirectory=python' && \
-  cd /mnt && \
+  cmake \
+	gcc \
+	cpp \
+	g++ \
+	git \
+	make \
+	libc-dev-bin libc6-dev linux-libc-dev \
+	python3-pip \
+	python3-setuptools \
+	python3-wheel \
+	${with_arm64_as:+binutils-aarch64-linux-gnu} \
+	${with_arm32_as:+binutils-arm-linux-gnueabi} \
+	${with_ppc_as:+binutils-powerpc64le-linux-gnu} && \
+	pip3 install meson ninja && \
+	cd /tmp && \
+	git clone -b "$RZ_PIPE_PY_VERSION" https://github.com/rizinorg/rz-pipe && \
+	pip3 install ./rz-pipe/python && \
   git clone -b "$RZ_VERSION" -q --depth 1 --recurse-submodules https://github.com/rizinorg/rizin.git && \
-  cd rizin && \
-  ./configure && \
-  make && \
-  make install && \
-  apt-get install -y xz-utils && \
-  apt-get remove --purge -y \
-  bison \
-  python3-pip \
-  glib-2.0 && \
+	cd rizin && \
+	meson --prefix=/usr /tmp/build && \
+	meson compile -C /tmp/build && \
+	meson install -C /tmp/build && \
+	rm -rf /tmp/build && \
+	pip3 uninstall -y meson ninja && \
+	apt-get remove --purge -y \
+	cmake \
+	cpp \
+	g++ \
+	python3-pip \
+	python3-setuptools \
+	python3-wheel && \
   apt-get autoremove --purge -y && \
   apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -97,15 +96,15 @@ RUN groupadd -r nonroot && \
   usermod -a -G sudo nonroot && echo 'nonroot:nonroot' | chpasswd
 
 # Initilise base user
-USER nonroot
+#USER nonroot
 WORKDIR /home/nonroot/workdir
 VOLUME ["/home/nonroot/workdir"]
 ENV HOME /home/nonroot
+ENV LD_LIBRARY_PATH=/usr/lib64
 
 # Setup rz-pm
 RUN rz-pm init && \
   rz-pm update && \
   chown -R nonroot:nonroot /home/nonroot/.config
 
-EXPOSE 8080
 CMD ["/bin/bash"]
