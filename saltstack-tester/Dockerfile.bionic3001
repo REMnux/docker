@@ -5,8 +5,8 @@ RUN \
   export "LANG=en_US.UTF-8" && \
   apt-get update && \
   apt-get install -y wget gnupg && \
-  wget -O - https://repo.saltstack.com/py3/ubuntu/18.04/amd64/3001/SALTSTACK-GPG-KEY.pub | apt-key add - && \
-  echo "deb http://repo.saltstack.com/py3/ubuntu/18.04/amd64/3001 bionic main" | tee /etc/apt/sources.list.d/saltstack.list && \
+  wget -O - https://repo.saltproject.io/py3/ubuntu/18.04/amd64/3001/salt-archive-keyring.gpg | apt-key add - && \
+  echo "deb [arch=amd64] https://repo.saltproject.io/py3/ubuntu/18.04/amd64/3001" | tee /etc/apt/sources.list.d/saltstack.list && \
   apt-get update && \
   apt-get install -y salt-minion && \
   echo "file_client: local" > /etc/salt/minion && \

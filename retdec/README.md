@@ -1,6 +1,6 @@
 # RetDec Retargetable machine-code decompiler
 
-This is a RetDec docker built on Ubuntu 18.04 LTS that encapsulates [RetDec][1], a Retargetable Decompiler, created by Avast.
+This is a RetDec docker built on Ubuntu 20.04 LTS that encapsulates [RetDec][1], a Retargetable Decompiler, created by Avast.
 
 The original source for the software can be 
 

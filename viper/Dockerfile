@@ -17,8 +17,8 @@
 # running: sudo service clamav-daemon start
 # Before running Viper, create the  ~/workdir and make it world-accessible ("chmod a+xwr").	
 
-FROM ubuntu:18.04
-LABEL version="2.0"
+FROM ubuntu:20.04
+LABEL version="3.0"
 LABEL description="Viper Framework Docker"
 LABEL maintainer="https://github.com/digitalsleuth"
 ENV LANG C.UTF-8
@@ -64,9 +64,11 @@ RUN git submodule init && git submodule update && \
   sed -i 's/verify-sigs @ //g' requirements.txt && \
   sed -i 's/PyMISPGalaxies @ //g' requirements.txt
 
+USER root
 WORKDIR /home/nonroot/.viper/modules
-RUN python3 -m pip install -U -r requirements.txt
+RUN python3 -m pip install -U -r requirements.txt && python3 -m pip install 'lief>=0.11.0'
 
+USER nonroot
 ENV HOME /home/nonroot
 WORKDIR /home/nonroot/workdir
 VOLUME ["/home/nonroot/workdir"]

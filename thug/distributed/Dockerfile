@@ -32,14 +32,16 @@
 # on the installation script created by Payload Security
 # (https://github.com/PayloadSecurity/VxCommunity/blob/master/bash/thuginstallation.sh)
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="22 Sep 2020"
+LABEL updated="22 May 2021"
 LABEL updated_by="digitalsleuth"
 
 USER root
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    wget \
+    unzip \
     build-essential \
     sudo \
     python \
@@ -67,16 +69,19 @@ RUN apt-get update && \
     autoconf  \
     mongodb  \
     mongodb-dev  \
-    python-pymongo  \
+    python3-pymongo  \
     rabbitmq-server \
-    python-pika && \
+    python3-pika && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --upgrade pip setuptools pytesseract
+RUN python3 -m pip install --upgrade pip setuptools pytesseract
+WORKDIR /tmp
+RUN wget https://github.com/area1/stpyv8/releases/download/v9.1.269.28/stpyv8-ubuntu-20.04-python-3.8.zip && \
+    unzip stpyv8-ubuntu-20.04-python-3.8.zip && \
+    python3 -m pip install stpyv8-ubuntu-20.04-3.8/stpyv8-9.1.269.28-cp38-cp38-linux_x86_64.whl && \
+    rm -rf stpyv8-ubuntu-20.04*
+
 WORKDIR /usr/local/src
-
-RUN pip3 install https://github.com/area1/stpyv8/releases/download/v8.5.210.26/stpyv8-8.5.210.26-cp36-cp36m-linux_x86_64.whl
-
 RUN git clone --depth 1 https://github.com/buffer/libemu.git && \
     cd libemu && \
     autoreconf -v -i && \
@@ -85,7 +90,7 @@ RUN git clone --depth 1 https://github.com/buffer/libemu.git && \
     cd .. && \
     ldconfig
 
-RUN pip3 install thug && \
+RUN python3 -m pip install thug && \
     git clone --depth 1 https://github.com/buffer/thug.git && \
     mkdir /etc/thug && \
     cd /etc/thug && \
@@ -101,7 +106,7 @@ RUN pip3 install thug && \
     cp conf/thug.conf /etc/thug
 
 RUN groupadd -r thug && \
-    useradd -m -d /home/thug -g thug -s /sbin/nologin -c "Thug User" thug && \
+    useradd -m -d /home/thug -g thug -s /usr/sbin/nologin -c "Thug User" thug && \
     mkdir -p /tmp/thug/logs && \
     chown -R thug:thug /home/thug /tmp/thug/logs && \
     usermod -a -G sudo thug &&  echo 'thug:thug' | chpasswd
