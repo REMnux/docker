@@ -8,12 +8,14 @@
 # To stop jsdetox, use: 
 # sudo docker stop jsdetox
 # 
-# Updated for Ubuntu 18.04
+# Updated for Ubuntu 20.04
 # Changes: Update version of therubyracer from 0.9.8 to 0.12.3
+#          Update docker to 20.04
+#          Install and specify bundler version 1.17.3 for focal
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="1 May 2020"
+LABEL updated="22 May 2021"
 
 USER root
 RUN apt-get update && apt-get install -y \
@@ -24,6 +26,7 @@ RUN apt-get update && apt-get install -y \
   zlib1g-dev \
   build-essential && \
   rm -rf /var/lib/apt/lists/*
+
 RUN groupadd -r nonroot && \
   useradd -r -g nonroot -d /home/nonroot -s /usr/sbin/nologin -c "Nonroot User" nonroot && \
   mkdir /home/nonroot && \
@@ -34,9 +37,10 @@ WORKDIR /home/nonroot
 RUN git clone https://github.com/svent/jsdetox.git
 
 USER root
+RUN gem install bundler -v "1.17.3"
 WORKDIR /home/nonroot/jsdetox
 RUN sed "s/, '0.9.8'/, '0.12.3'/g" -i Gemfile
-RUN bundle install
+RUN bundle _1.17.3_ install
 
 USER nonroot
 EXPOSE 3000

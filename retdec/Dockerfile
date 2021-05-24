@@ -1,4 +1,4 @@
-# This is a RetDec docker built on Ubuntu 18.04 LTS
+# This is a RetDec docker built on Ubuntu 20.04 LTS
 # The RetDec source sofware can be found at:
 # https://github.com/avast/retdec
 #
@@ -24,9 +24,9 @@
 # User/Pass: retdec/retdec
 #
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="19 Jul 2020"
+LABEL updated="24 May 2021"
 LABEL updated_by="digitalsleuth"
 
 USER root
