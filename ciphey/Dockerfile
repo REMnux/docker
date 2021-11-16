@@ -17,7 +17,7 @@
 #
 # The remnux/ciphey image is hosted on its Docker Hub page.
 
-FROM python:3.8.5-slim-buster
+FROM python:3.8.12-slim-buster
 LABEL version="1.1"
 LABEL description="Ciphey - An Automated Decoding and Decryption Tool"
 LABEL maintainer="Lenny Zeltser"
