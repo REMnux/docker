@@ -1,0 +1,14 @@
+FROM ubuntu:18.04
+
+RUN \
+  export DEBIAN_FRONTEND=noninteractive && \
+  export "LANG=en_US.UTF-8" && \
+  apt-get update && \
+  apt-get install -y wget gnupg && \
+  wget -O - https://repo.saltproject.io/py3/ubuntu/18.04/amd64/latest/salt-archive-keyring.gpg | apt-key add - && \
+  echo "deb [arch=amd64] https://repo.saltproject.io/py3/ubuntu/18.04/amd64/3004 bionic main" | tee /etc/apt/sources.list.d/saltstack.list && \
+  apt-get update && \
+  apt-get install -y salt-common && \
+  mkdir -p /etc/salt && \
+  echo "file_client: local" > /etc/salt/minion && \
+  unset DEBIAN_FRONTEND
