@@ -46,7 +46,8 @@ RUN groupadd -r nonroot && \
 RUN wget -O /tmp/radare2_${R2VER}_amd64.deb https://github.com/radareorg/radare2/releases/download/${R2VER}/radare2_${R2VER}_amd64.deb && \
   dpkg -i /tmp/radare2_${R2VER}_amd64.deb && \
   r2pm init && \
-  r2pm update
+  r2pm update && \
+  rm /tmp/radare2_${R2VER}_amd64.deb
 
 USER root
 RUN chown -R root:root /usr/local/radare2
