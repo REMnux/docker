@@ -20,18 +20,17 @@
 
 FROM ubuntu:20.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="8 Dec 2020"
-LABEL updated_by="Lenny Zeltser"
+LABEL updated="13 Apr 2022"
+LABEL updated_by="Corey Forman"
 ENV LANG C.UTF-8
 ENV LANGUAGE C.UTF-8
 ENV LC_ALL C.UTF-8
+ARG R2VER=5.6.6
 
 USER root
 RUN apt-get update && apt-get install -y \
   sudo \
-  ccache \
   wget \
-  build-essential \
   git && \
   rm -rf /var/lib/apt/lists/*
 
@@ -44,10 +43,8 @@ RUN groupadd -r nonroot && \
   mkdir /usr/local/radare2 && \
   chown nonroot:nonroot /usr/local/radare2
   
-USER nonroot
-RUN git clone -b master --depth 1  https://github.com/radare/radare2.git /usr/local/radare2 && \
-  cd /usr/local/radare2 && \
-  ./sys/install.sh && \
+RUN wget -O /tmp/radare2_${R2VER}_amd64.deb https://github.com/radareorg/radare2/releases/download/${R2VER}/radare2_${R2VER}_amd64.deb && \
+  dpkg -i /tmp/radare2_${R2VER}_amd64.deb && \
   r2pm init && \
   r2pm update
 
