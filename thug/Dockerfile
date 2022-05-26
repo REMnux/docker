@@ -34,8 +34,8 @@
 
 FROM ubuntu:20.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="22 May 2021"
-LABEL updated_by="digitalsleuth"
+LABEL updated="26 May 2022"
+LABEL updated_by="lennyzeltser"
 
 USER root
 RUN apt-get update && \
@@ -52,6 +52,7 @@ RUN apt-get update && \
     libboost-dev \
     libboost-python-dev \
     libboost-system-dev \
+    libboost-iostreams-dev \
     python3-pip \
     libxml2-dev \
     libxslt1-dev \
@@ -71,9 +72,11 @@ RUN apt-get update && \
 
 RUN python3 -m pip install --upgrade pip setuptools pytesseract
 WORKDIR /tmp
-RUN wget https://github.com/area1/stpyv8/releases/download/v9.1.269.28/stpyv8-ubuntu-20.04-python-3.8.zip && \
+RUN wget https://github.com/cloudflare/stpyv8/releases/download/v10.2.154.4/stpyv8-ubuntu-20.04-python-3.8.zip && \
     unzip stpyv8-ubuntu-20.04-python-3.8.zip && \
-    python3 -m pip install stpyv8-ubuntu-20.04-3.8/stpyv8-9.1.269.28-cp38-cp38-linux_x86_64.whl && \
+    python3 -m pip install stpyv8-ubuntu-20.04-3.8/stpyv8-10.2.154.4-cp38-cp38-linux_x86_64.whl && \
+    mkdir -p /usr/share/stpyv8 && \
+    mv stpyv8-ubuntu-20.04-3.8/icudtl.dat /usr/share/stpyv8 && \
     rm -rf stpyv8-ubuntu-20.04*
 
 WORKDIR /usr/local/src
@@ -91,8 +94,8 @@ RUN python3 -m pip install thug && \
     cd /etc/thug && \
     mkdir rules personalities scripts plugins hooks && \
     cd /usr/local/src/thug && \
-    cp -R thug/Classifier/rules/* /etc/thug/rules/ && \
-    cp -R thug/DOM/personalities/* /etc/thug/personalities && \
+    cp -R thug/conf/rules/* /etc/thug/rules/ && \
+    cp -R thug/conf/personalities/* /etc/thug/personalities && \
     cp thug/DOM/thug.js /etc/thug/scripts && \
     cp thug/DOM/storage.js /etc/thug/scripts && \
     cp thug/DOM/date.js /etc/thug/scripts && \
