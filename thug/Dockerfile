@@ -94,8 +94,8 @@ RUN python3 -m pip install thug && \
     cd /etc/thug && \
     mkdir rules personalities scripts plugins hooks && \
     cd /usr/local/src/thug && \
-    cp -R thug/conf/rules/* /etc/thug/rules/ && \
-    cp -R thug/conf/personalities/* /etc/thug/personalities && \
+    cp -R conf/rules/* /etc/thug/rules/ && \
+    cp -R conf/personalities/* /etc/thug/personalities && \
     cp thug/DOM/thug.js /etc/thug/scripts && \
     cp thug/DOM/storage.js /etc/thug/scripts && \
     cp thug/DOM/date.js /etc/thug/scripts && \
