@@ -28,56 +28,59 @@
 #
 # This file was originally based on ideas from Spenser Reinhardt's Dockerfile
 # (https://registry.hub.docker.com/u/sreinhardt/honeynet/dockerfile),
-# on instructions outlined by M. Fields (@shakey_1) and 
+# on instructions outlined by M. Fields (@shakey_1), 
 # on the installation script created by Payload Security
-# (https://github.com/PayloadSecurity/VxCommunity/blob/master/bash/thuginstallation.sh)
+# (https://github.com/PayloadSecurity/VxCommunity/blob/master/bash/thuginstallation.sh),
+# and the official Dockerfile by Angelo Dell'Aera at https://github.com/buffer/thug/blob/master/docker/Dockerfile
 
-FROM ubuntu:20.04
+FROM ubuntu:22.10
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="26 May 2022"
+LABEL updated="17 Dec 2022"
 LABEL updated_by="lennyzeltser"
 
 USER root
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    unzip \
-    wget \
     build-essential \
     sudo \
-    python \
     python3 \
     python3-dev \
     python3-setuptools \
-    python3-wheel \ 
+    python3-wheel \
+    python-is-python3 \
     libboost-dev \
+    libboost-iostreams-dev \
     libboost-python-dev \
     libboost-system-dev \
-    libboost-iostreams-dev \
     python3-pip \
     libxml2-dev \
-    libxslt1-dev \
+    libxslt-dev \
     tesseract-ocr \
     git \
+    wget \
+    unzip \
     libtool \
-    libgraphviz-dev \
+    graphviz-dev \
     automake \
+    libffi-dev \
     graphviz \
     libfuzzy-dev \
     libfuzzy2 \
     libjpeg-dev \
     libffi-dev \
     pkg-config \
+    clang \
     autoconf && \
     rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --upgrade pip setuptools pytesseract
+RUN python3 -m pip install --upgrade pip setuptools pytesseract pygraphviz
 WORKDIR /tmp
-RUN wget https://github.com/cloudflare/stpyv8/releases/download/v10.2.154.4/stpyv8-ubuntu-20.04-python-3.8.zip && \
-    unzip stpyv8-ubuntu-20.04-python-3.8.zip && \
-    python3 -m pip install stpyv8-ubuntu-20.04-3.8/stpyv8-10.2.154.4-cp38-cp38-linux_x86_64.whl && \
+RUN wget https://github.com/cloudflare/stpyv8/releases/download/v10.8.168.22/stpyv8-ubuntu-22.04-python-3.10.zip && \
+    unzip stpyv8-ubuntu-22.04-python-3.10.zip && \
+    pip3 install stpyv8-ubuntu-22.04-3.10/stpyv8-10.8.168.22-cp310-cp310-linux_x86_64.whl && \
     mkdir -p /usr/share/stpyv8 && \
-    mv stpyv8-ubuntu-20.04-3.8/icudtl.dat /usr/share/stpyv8 && \
-    rm -rf stpyv8-ubuntu-20.04*
+    mv stpyv8-ubuntu-22.04-3.10/icudtl.dat /usr/share/stpyv8 && \
+    rm -rf stpyv8-ubuntu-22.04*
 
 WORKDIR /usr/local/src
 RUN git clone --depth 1 https://github.com/buffer/libemu.git && \
@@ -86,22 +89,14 @@ RUN git clone --depth 1 https://github.com/buffer/libemu.git && \
     ./configure && \
     make install && \
     cd .. && \
+    rm -rf libemu && \
     ldconfig
 
 RUN python3 -m pip install thug && \
     git clone --depth 1 https://github.com/buffer/thug.git && \
     mkdir /etc/thug && \
-    cd /etc/thug && \
-    mkdir rules personalities scripts plugins hooks && \
-    cd /usr/local/src/thug && \
-    cp -R conf/rules/* /etc/thug/rules/ && \
-    cp -R conf/personalities/* /etc/thug/personalities && \
-    cp thug/DOM/thug.js /etc/thug/scripts && \
-    cp thug/DOM/storage.js /etc/thug/scripts && \
-    cp thug/DOM/date.js /etc/thug/scripts && \
-    cp thug/DOM/eval.js /etc/thug/scripts && \
-    cp thug/DOM/write.js /etc/thug/scripts && \
-    cp conf/thug.conf /etc/thug
+    cp -R thug/conf/* /etc/thug && \
+    rm -rf thug
 
 RUN groupadd -r thug && \
     useradd -m -d /home/thug -g thug -s /usr/sbin/nologin -c "Thug User" thug && \
