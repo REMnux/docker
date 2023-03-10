@@ -1,4 +1,3 @@
-#
 # This Docker image encapsulates the REMnux v7 distro on Ubuntu 20.04 (focal).
 # For details about REMnux, including how you can run it on a physical system
 # or as a virtual machine, see https://REMnux.org.
@@ -29,22 +28,22 @@ FROM ubuntu:20.04
 
 LABEL description="REMnux® is a Linux toolkit for reverse-engineering and analyzing malicious software."
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
+LABEL version="v2023.9.1"
+ARG CAST_VER=0.14.0
 
 USER root
 
+WORKDIR /tmp
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install -y wget gnupg git && \
-    wget -nv -O - https://repo.saltproject.io/py3/ubuntu/20.04/amd64/latest/salt-archive-keyring.gpg | apt-key add - && \
-    echo deb [arch=amd64] https://repo.saltproject.io/py3/ubuntu/20.04/amd64/3004 focal main > /etc/apt/sources.list.d/saltstack.list && \
-    apt-get update && \
-    apt-get install -y salt-common && \
-    git clone https://github.com/REMnux/salt-states.git /srv/salt && \
-    salt-call -l info --local state.sls remnux.cloud pillar='{"remnux_user": "remnux"}' && \
-    rm -rf /srv && \
-    rm -rf /var/cache/salt/* && \
+    wget https://github.com/ekristen/cast/releases/download/v${CAST_VER}/cast_v${CAST_VER}_linux_amd64.deb && \
+    dpkg -i /tmp/cast_v${CAST_VER}_linux_amd64.deb && \
+    cast install --mode cloud --user remnux remnux && \
     rm -rf /root/.cache/* && \
     unset DEBIAN_FRONTEND
+
+RUN rm /tmp/cast_v${CAST_VER}_linux_amd64.deb
 
 ENV TERM linux
 WORKDIR /home/remnux

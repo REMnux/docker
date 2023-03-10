@@ -1,0 +1,28 @@
+version: '3'
+services:
+  container:
+    image: remnux/remnux-distro:focal
+    hostname: remnux
+    container_name: remnux
+    networks:
+      net:
+        ipv4_address: 172.22.0.3
+    volumes:
+      - ./files:/home/remnux/files/:ro
+    ports:
+      - "33:22"
+    cap_add:
+      - SYS_ADMIN
+      - MKNOD
+    privileged: true
+    devices:
+      - "/dev/fuse:/dev/fuse"
+
+networks:
+  net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.22.0.0/16
+          gateway: 172.22.0.1
+
