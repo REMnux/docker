@@ -1,0 +1,14 @@
+FROM ubuntu:20.04
+
+RUN \
+  export DEBIAN_FRONTEND=noninteractive && \
+  export "LANG=en_US.UTF-8" && \
+  apt-get update && \
+  apt-get install -y curl gnupg && \
+  curl -fsSL -o /usr/share/keyrings/salt-archive-keyring-2023.gpg https://repo.saltproject.io/salt/py3/ubuntu/20.04/amd64/SALT-PROJECT-GPG-PUBKEY-2023.gpg && \
+  echo "deb [signed-by=/usr/share/keyrings/salt-archive-keyring-2023.gpg arch=amd64] https://repo.saltproject.io/salt/py3/ubuntu/20.04/amd64/3006 focal main" | tee /etc/apt/sources.list.d/saltstack.list && \
+  apt-get update && \
+  apt-get install -y salt-common && \
+  mkdir -p /etc/salt && \
+  echo "file_client: local" > /etc/salt/minion && \
+  unset DEBIAN_FRONTEND
