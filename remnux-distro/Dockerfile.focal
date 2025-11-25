@@ -28,8 +28,8 @@ FROM ubuntu:20.04
 
 LABEL description="REMnux® is a Linux toolkit for reverse-engineering and analyzing malicious software."
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
-LABEL version="v2023.9.1"
-ARG CAST_VER=0.14.0
+LABEL version="v2025.30.1"
+ARG CAST_VER=0.16.22
 
 USER root
 
@@ -37,15 +37,15 @@ WORKDIR /tmp
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install -y wget gnupg git && \
-    wget https://github.com/ekristen/cast/releases/download/v${CAST_VER}/cast_v${CAST_VER}_linux_amd64.deb && \
-    dpkg -i /tmp/cast_v${CAST_VER}_linux_amd64.deb && \
+    wget https://github.com/ekristen/cast/releases/download/v${CAST_VER}/cast-v${CAST_VER}-linux-amd64.deb && \
+    dpkg -i /tmp/cast-v${CAST_VER}-linux-amd64.deb && \
     cast install --mode cloud --user remnux remnux && \
     rm -rf /root/.cache/* && \
     unset DEBIAN_FRONTEND
 
-RUN rm /tmp/cast_v${CAST_VER}_linux_amd64.deb
+RUN rm /tmp/cast-v${CAST_VER}-linux-amd64.deb
 
-ENV TERM linux
+ENV TERM=linux
 WORKDIR /home/remnux
 
 RUN mkdir /var/run/sshd
