@@ -1,0 +1,74 @@
+# This Docker image encapsulates the REMnux distro on Ubuntu 24.04 (noble).
+# For details about REMnux, including how you can run it on a physical system
+# or as a virtual machine, see https://REMnux.org.
+#
+# You can run this image as a container using a command such as:
+#
+# docker run --rm -it remnux/remnux-distro:noble /bin/bash
+#
+# To map a local directory into the container's /home/remnux/files directory,
+# you could use a command like this by supplying the appropriate directory name:
+#
+# docker run --rm -it -v <local_directory>:/home/remnux/files remnux/remnux-distro:noble /bin/bash
+#
+# If you'd like to access the container using SSH, you can invoke it like this by
+# mapping your local TCP port 22 to the container's internal TCP port 22. In this example,
+# the container will remain active in the background:
+#
+# docker run -d -p 22:22 remnux/remnux-distro:noble
+#
+# If you're going to run this container in a remote cloud, be sure to change the default
+# password and otherwise harden the system according to your requirements.
+#
+# If you're planning to use Cutter inside the container, you'll need to include the
+# --privileged parameter when invoking Docker.
+#
+
+FROM ubuntu:24.04
+
+LABEL description="REMnux is a Linux toolkit for reverse-engineering and analyzing malicious software."
+LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
+
+WORKDIR /tmp
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get install -y curl gnupg git && \
+    curl -fsSL -o /tmp/remnux-installer https://remnux.org/remnux && \
+    chmod +x /tmp/remnux-installer && \
+    /tmp/remnux-installer install --mode=cloud --user=remnux && \
+    apt-get purge -y snapd libbison-dev docker-ce-cli && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    mv /var/cache/cast/installer/logs/results.yaml /root/cast-results.yaml && \
+    rm -rf /var/lib/apt/lists/* \
+           /var/backups/* \
+           /var/log/journal/* \
+           /var/log/vmware* \
+           /var/log/kern.log \
+           /var/log/auth.log \
+           /var/log/alternatives.log \
+           /var/log/dpkg.log \
+           /var/log/syslog \
+           /var/log/apt/* \
+           /var/cache/cast/* \
+           /var/cache/salt/* \
+           /var/cache/debconf/* \
+           /usr/share/doc/* \
+           /usr/share/ri/* \
+           /usr/local/src/* \
+           /usr/local/yara-rules/.git \
+           /usr/local/shellcode2exe-bat/.git \
+           /root/.cache/* \
+           /root/.cpan \
+           /home/remnux/.cache/vmware/drag_and_drop \
+           /home/remnux/.cpan \
+           /tmp/* \
+           /var/tmp/* && \
+    mkdir -p /var/cache/cast/installer/logs /var/run/sshd && \
+    mv /root/cast-results.yaml /var/cache/cast/installer/logs/results.yaml
+
+ENV TERM=linux
+WORKDIR /home/remnux
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]

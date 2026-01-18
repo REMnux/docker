@@ -1,7 +1,6 @@
-version: '3'
 services:
   container:
-    image: remnux/remnux-distro:focal
+    image: remnux/remnux-distro:noble
     hostname: remnux
     container_name: remnux
     networks:
