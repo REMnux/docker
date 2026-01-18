@@ -23,6 +23,12 @@
 # If you're planning to use Cutter inside the container, you'll need to include the
 # --privileged parameter when invoking Docker.
 #
+# To minimize the image size, the following are removed from the container:
+# - VS Code (code): Use Remote-SSH extension from your host instead
+# - Wine and Wine-dependent tools (scdbg, ssview, shellcode2exe-bat, runsc)
+# - Python bytecode (.pyc files and __pycache__ directories)
+# To install these tools, run "remnux install" or use apt to install selectively.
+#
 
 FROM ubuntu:24.04
 
@@ -36,10 +42,15 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     curl -fsSL -o /tmp/remnux-installer https://remnux.org/remnux && \
     chmod +x /tmp/remnux-installer && \
     /tmp/remnux-installer install --mode=cloud --user=remnux && \
-    apt-get purge -y snapd libbison-dev docker-ce-cli && \
+    apt-get purge -y snapd libbison-dev docker-ce-cli \
+                     code \
+                     winehq-staging wine-staging wine-staging-amd64 wine-staging-i386 \
+                     scdbg runsc && \
     apt-get autoremove -y && \
     apt-get clean && \
     mv /var/cache/cast/installer/logs/results.yaml /root/cast-results.yaml && \
+    find /opt -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true && \
+    find /opt -name '*.pyc' -delete 2>/dev/null || true && \
     rm -rf /var/lib/apt/lists/* \
            /var/backups/* \
            /var/log/journal/* \
@@ -57,7 +68,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
            /usr/share/ri/* \
            /usr/local/src/* \
            /usr/local/yara-rules/.git \
-           /usr/local/shellcode2exe-bat/.git \
+           /usr/local/shellcode2exe-bat \
+           /usr/local/ssview \
+           /opt/scdbg \
            /root/.cache/* \
            /root/.cpan \
            /home/remnux/.cache/vmware/drag_and_drop \
