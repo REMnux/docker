@@ -63,7 +63,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
            /var/log/apt/* \
            /var/cache/cast/* \
            /var/cache/salt/* \
-           /var/cache/debconf/* \
            /usr/share/doc/* \
            /usr/share/ri/* \
            /usr/local/src/* \
