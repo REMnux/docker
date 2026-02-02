@@ -1,0 +1,27 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    DEBFULLNAME="REMnux Distribution" \
+    DEBEMAIL=distro@remnux.org \
+    DISTRIBUTION=noble
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        debhelper \
+        devscripts \
+        dh-make \
+        dh-python \
+        dput \
+        fakeroot \
+        git \
+        gnupg \
+        libssl-dev \
+        lintian \
+        quilt \
+        software-properties-common \
+        zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /distro
