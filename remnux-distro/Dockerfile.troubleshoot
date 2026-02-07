@@ -1,0 +1,116 @@
+# Troubleshooting Dockerfile for Docker Hub Build Failures
+#
+# This Dockerfile bypasses Cast and runs SaltStack directly so all salt output
+# is visible in the Docker Hub build log. Use this to diagnose which salt states
+# fail during the automated Docker Hub build.
+#
+# Build args:
+#   SALT_STATES_REF  - Git ref to checkout (default: master)
+#   GRANULAR         - Set to 1 to run each addon sub-module independently (default: 0)
+#
+# Usage (local smoke test):
+#   docker build -f Dockerfile.troubleshoot -t remnux-troubleshoot .
+#
+# Usage (granular mode):
+#   docker build -f Dockerfile.troubleshoot --build-arg GRANULAR=1 -t remnux-troubleshoot .
+#
+# Usage (specific ref):
+#   docker build -f Dockerfile.troubleshoot --build-arg SALT_STATES_REF=v2026.6.23 -t remnux-troubleshoot .
+
+FROM ubuntu:24.04
+
+LABEL description="REMnux troubleshooting build - displays salt state output in build log"
+LABEL maintainer="Lenny Zeltser (@lennyzeltser, zeltser.com)"
+
+ARG SALT_STATES_REF=master
+ARG GRANULAR=0
+
+# --- Install prerequisites and Salt 3006 ---
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    export LANG=en_US.UTF-8 && \
+    apt-get update && \
+    apt-get install -y curl gnupg git wget && \
+    wget -O - "https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public" \
+      | tee /etc/apt/keyrings/salt-archive-keyring.pgp && \
+    wget -O - "https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.sources" \
+      | tee /etc/apt/sources.list.d/salt.sources && \
+    apt-get update && \
+    apt-get install -y salt-common && \
+    unset DEBIAN_FRONTEND
+
+# --- Create remnux user (pillar defaults reference this) ---
+RUN useradd -m -s /bin/bash remnux
+
+# --- Configure Salt ---
+RUN mkdir -p /etc/salt && \
+    printf '%s\n' \
+      "file_client: local" \
+      "file_roots:" \
+      "  base:" \
+      "    - /srv/salt" \
+    > /etc/salt/minion
+
+# --- Clone salt-states ---
+RUN git clone --depth 1 --branch "${SALT_STATES_REF}" \
+    https://github.com/REMnux/salt-states.git /srv/salt
+
+# --- Run salt states ---
+# Using a shell script so we can branch on GRANULAR at build time.
+# All output goes directly to the Docker build console.
+RUN set -e && \
+    echo "========================================================" && \
+    echo "  REMnux Salt Troubleshoot Build" && \
+    echo "  Ref: ${SALT_STATES_REF}" && \
+    echo "  Mode: $([ "${GRANULAR}" = "1" ] && echo GRANULAR || echo FULL)" && \
+    echo "  Salt: $(salt-call --version)" && \
+    echo "========================================================" && \
+    if [ "${GRANULAR}" = "1" ]; then \
+      MODULES="remnux.network remnux.repos remnux.python3-packages remnux.packages remnux.rubygems remnux.scripts remnux.config remnux.tools remnux.node-packages remnux.perl-packages remnux.tools.remnux-installer remnux.theme" && \
+      PASSED="" && \
+      FAILED="" && \
+      for mod in ${MODULES}; do \
+        echo "" && \
+        echo "╔══════════════════════════════════════════════════════╗" && \
+        echo "║  Running: ${mod}" && \
+        echo "╚══════════════════════════════════════════════════════╝" && \
+        if salt-call --local --retcode-passthrough state.apply "${mod}" 2>&1; then \
+          PASSED="${PASSED} ${mod}" ; \
+        else \
+          FAILED="${FAILED} ${mod}" ; \
+        fi ; \
+      done && \
+      echo "" && \
+      echo "========================================================" && \
+      echo "  GRANULAR RESULTS SUMMARY" && \
+      echo "========================================================" && \
+      echo "  PASSED:" && \
+      for mod in ${PASSED}; do echo "    ✓ ${mod}"; done && \
+      if [ -n "${FAILED}" ]; then \
+        echo "  FAILED:" && \
+        for mod in ${FAILED}; do echo "    ✗ ${mod}"; done && \
+        echo "========================================================" && \
+        echo "  BUILD RESULT: SOME MODULES FAILED" && \
+        echo "========================================================" ; \
+      else \
+        echo "========================================================" && \
+        echo "  BUILD RESULT: ALL MODULES PASSED" && \
+        echo "========================================================" ; \
+      fi ; \
+    else \
+      echo "" && \
+      echo "Running: salt-call --local state.apply remnux.cloud" && \
+      echo "" && \
+      salt-call --local --retcode-passthrough --state-output=full state.apply remnux.cloud 2>&1 ; \
+      RC=$? && \
+      echo "" && \
+      echo "========================================================" && \
+      echo "  FULL MODE RESULTS SUMMARY (exit code: ${RC})" && \
+      echo "========================================================" && \
+      if [ ${RC} -ne 0 ]; then \
+        echo "  Some states failed. Look for 'Result: False' above." && \
+        echo "========================================================" ; \
+      else \
+        echo "  ALL STATES PASSED" && \
+        echo "========================================================" ; \
+      fi ; \
+    fi
