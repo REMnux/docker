@@ -11,32 +11,31 @@
 #   (such as -F to enable file logging). Logs are stored in /tmp/thug/logs
 #   by default. Your <local_folder> should be made world-accessible to ensure
 #   no permissions issues: e.g. "chmod a+xwr ~/logs"
-# 
+#
 # sudo docker run --rm -it --entrypoint "/bin/bash" remnux/thug
 #
-#   This will enter you into the docker where you can run "thug" with 
+#   This will enter you into the docker where you can run "thug" with
 #   the desired parameters (such as -F to enable file logging).
 #
 # sudo docker run --rm -it -v <local_folder>:/tmp/thug/logs --entrypoint "/bin/bash" remnux/thug
 #
-#   This is essentially a combination of both of the above, allowing you entry into 
+#   This is essentially a combination of both of the above, allowing you entry into
 #   the docker, and storage of log files in your host environment.
 #
 # To support distributed operations and MongoDB output, install the following
 # packages into the image using "apt-get mongodb mongodb-dev python-pymongo
 # rabbitmq-server python-pika"
 #
-# This file was originally based on ideas from Spenser Reinhardt's Dockerfile
-# (https://registry.hub.docker.com/u/sreinhardt/honeynet/dockerfile),
-# on instructions outlined by M. Fields (@shakey_1), 
-# on the installation script created by Payload Security
-# (https://github.com/PayloadSecurity/VxCommunity/blob/master/bash/thuginstallation.sh),
-# and the official Dockerfile by Angelo Dell'Aera at https://github.com/buffer/thug/blob/master/docker/Dockerfile
+# This Dockerfile mirrors the approach of the REMnux salt state for Thug.
 
-FROM ubuntu:22.10
+FROM ubuntu:24.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="17 Dec 2022"
+LABEL updated="9 Feb 2026"
 LABEL updated_by="lennyzeltser"
+
+ENV LANG=C.UTF-8
+ENV LANGUAGE=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 USER root
 RUN apt-get update && \
@@ -45,43 +44,56 @@ RUN apt-get update && \
     sudo \
     python3 \
     python3-dev \
-    python3-setuptools \
-    python3-wheel \
-    python-is-python3 \
+    python3-pip \
+    python3-venv \
     libboost-dev \
     libboost-iostreams-dev \
     libboost-python-dev \
     libboost-system-dev \
-    python3-pip \
-    libxml2-dev \
-    libxslt-dev \
-    tesseract-ocr \
-    git \
-    wget \
-    unzip \
-    libtool \
-    graphviz-dev \
-    automake \
-    libffi-dev \
+    libgraphviz-dev \
     graphviz \
+    libxml2-dev \
+    libxslt1-dev \
+    libffi-dev \
     libfuzzy-dev \
     libfuzzy2 \
     libjpeg-dev \
-    libffi-dev \
-    pkg-config \
-    clang \
-    autoconf && \
+    libssl-dev \
+    libmagic-dev \
+    tesseract-ocr \
+    git \
+    wget \
+    autoconf \
+    automake \
+    libtool && \
     rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --upgrade pip setuptools pytesseract pygraphviz
-WORKDIR /tmp
-RUN wget https://github.com/cloudflare/stpyv8/releases/download/v10.8.168.22/stpyv8-ubuntu-22.04-python-3.10.zip && \
-    unzip stpyv8-ubuntu-22.04-python-3.10.zip && \
-    pip3 install stpyv8-ubuntu-22.04-3.10/stpyv8-10.8.168.22-cp310-cp310-linux_x86_64.whl && \
-    mkdir -p /usr/share/stpyv8 && \
-    mv stpyv8-ubuntu-22.04-3.10/icudtl.dat /usr/share/stpyv8 && \
-    rm -rf stpyv8-ubuntu-22.04*
+# Create virtual environment mirroring salt state /opt/thug virtualenv
+RUN python3 -m venv /opt/thug
 
+# Bootstrap pip and core packages per salt state
+RUN /opt/thug/bin/pip install \
+    "pip>=24.1.2" \
+    "setuptools>=70.0.0,<82" \
+    "wheel>=0.38.4" \
+    "importlib-metadata>=8.0.0"
+
+# Install pre-dependency packages per salt state
+RUN /opt/thug/bin/pip install \
+    yara-python \
+    pytesseract \
+    pycparser \
+    six \
+    cffi \
+    pygraphviz
+
+# Install STPyV8 v12.0.267.14 manylinux wheel per salt state
+WORKDIR /tmp
+RUN wget -q https://github.com/cloudflare/stpyv8/releases/download/v12.0.267.14/stpyv8-12.0.267.14-cp312-cp312-manylinux_2_31_x86_64.whl && \
+    /opt/thug/bin/pip install stpyv8-12.0.267.14-cp312-cp312-manylinux_2_31_x86_64.whl && \
+    rm -f stpyv8-12.0.267.14-cp312-cp312-manylinux_2_31_x86_64.whl
+
+# Build libemu from source (salt state installs from REMnux apt repo)
 WORKDIR /usr/local/src
 RUN git clone --depth 1 https://github.com/buffer/libemu.git && \
     cd libemu && \
@@ -92,21 +104,28 @@ RUN git clone --depth 1 https://github.com/buffer/libemu.git && \
     rm -rf libemu && \
     ldconfig
 
-RUN python3 -m pip install thug && \
-    git clone --depth 1 https://github.com/buffer/thug.git && \
-    mkdir /etc/thug && \
-    cp -R thug/conf/* /etc/thug && \
-    rm -rf thug
+# Install ssdeep per salt state (requires --no-build-isolation)
+RUN /opt/thug/bin/pip install ssdeep==3.4 --no-build-isolation
+
+# Install Thug and configure per salt state
+RUN git clone --depth 1 https://github.com/buffer/thug.git /usr/local/src/thug && \
+    /opt/thug/bin/pip install thug && \
+    mkdir -p /etc/thug && \
+    cp -R /usr/local/src/thug/thug/conf/* /etc/thug && \
+    rm -rf /usr/local/src/thug
+
+# Create symlink per salt state
+RUN ln -sf /opt/thug/bin/thug /usr/local/bin/thug
 
 RUN groupadd -r thug && \
     useradd -m -d /home/thug -g thug -s /usr/sbin/nologin -c "Thug User" thug && \
     mkdir -p /tmp/thug/logs && \
     chown -R thug:thug /home/thug /tmp/thug/logs && \
-    usermod -a -G sudo thug &&  echo 'thug:thug' | chpasswd
+    usermod -a -G sudo thug && echo 'thug:thug' | chpasswd
 
 USER thug
-ENV HOME /home/thug
-ENV USER thug
+ENV HOME=/home/thug
+ENV USER=thug
 WORKDIR /home/thug
 VOLUME ["/tmp/thug/logs"]
 ENTRYPOINT ["thug"]
