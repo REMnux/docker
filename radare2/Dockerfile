@@ -16,44 +16,47 @@
 #
 # Running 'r2agent -a' will enable the web-based interface on port 8080 by default.
 # To access this, add '-p 8080:8080' to the above docker command (before 'remnux/radare2')
-# Then browse to your http://YOUR_IP:8080. 
+# Then browse to http://YOUR_IP:8080.
 
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="13 Apr 2022"
-LABEL updated_by="Corey Forman"
-ENV LANG C.UTF-8
-ENV LANGUAGE C.UTF-8
-ENV LC_ALL C.UTF-8
-ARG R2VER=5.6.6
+LABEL updated="9 Feb 2026"
+LABEL updated_by="lennyzeltser"
+
+ENV LANG=C.UTF-8
+ENV LANGUAGE=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ARG R2VER=6.0.8
 
 USER root
-RUN apt-get update && apt-get install -y \
-  sudo \
-  wget \
-  git && \
-  rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates \
+    sudo \
+    wget \
+    git && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN wget -q -O /tmp/radare2_${R2VER}_amd64.deb \
+    https://github.com/radareorg/radare2/releases/download/${R2VER}/radare2_${R2VER}_amd64.deb && \
+    apt-get update && \
+    apt-get install -y /tmp/radare2_${R2VER}_amd64.deb && \
+    (apt-get remove --purge -y libradare2-common 2>/dev/null || true) && \
+    rm -f /tmp/radare2_${R2VER}_amd64.deb && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r nonroot && \
-  useradd -m -d /home/nonroot -g nonroot -s /usr/sbin/nologin -c "Nonroot User" nonroot && \
-  mkdir -p /home/nonroot/workdir && \
-  chown -R nonroot:nonroot /home/nonroot && \
-  usermod -a -G sudo nonroot && echo 'nonroot:nonroot' | chpasswd && \
-			echo "nonroot ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/nonroot && \
-  mkdir /usr/local/radare2 && \
-  chown nonroot:nonroot /usr/local/radare2
-  
-RUN wget -O /tmp/radare2_${R2VER}_amd64.deb https://github.com/radareorg/radare2/releases/download/${R2VER}/radare2_${R2VER}_amd64.deb && \
-  dpkg -i /tmp/radare2_${R2VER}_amd64.deb && \
-  r2pm init && \
-  r2pm update && \
-  rm /tmp/radare2_${R2VER}_amd64.deb
-
-USER root
-RUN chown -R root:root /usr/local/radare2
+    useradd -m -d /home/nonroot -g nonroot -s /usr/sbin/nologin -c "Nonroot User" nonroot && \
+    mkdir -p /home/nonroot/workdir && \
+    chown -R nonroot:nonroot /home/nonroot && \
+    usermod -a -G sudo nonroot && echo 'nonroot:nonroot' | chpasswd && \
+    echo "nonroot ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/nonroot
 
 USER nonroot
-ENV HOME /home/nonroot
+RUN r2pm -U
+
+ENV HOME=/home/nonroot
+ENV USER=nonroot
 WORKDIR /home/nonroot/workdir
 VOLUME ["/home/nonroot/workdir"]
 EXPOSE 8080
