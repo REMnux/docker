@@ -1,25 +1,7 @@
-# RetDec Retargetable machine-code decompiler
+This Docker image encapsulates [RetDec](https://github.com/avast/retdec), a retargetable machine-code decompiler based on LLVM.
 
-This is a RetDec docker built on Ubuntu 20.04 LTS that encapsulates [RetDec][1], a Retargetable Decompiler, created by Avast.
+To run this image after installing Docker, use a command like this, replacing "~/workdir" with the path to your working directory on the underlying host:
 
-The original source for the software can be 
+    docker run --rm -it -v ~/workdir:/home/retdec/workdir remnux/retdec
 
-To use this docker, issue the following command:
-
-`sudo docker run -it --rm -v <path_to_binary>:/tmp/files remnux/retdec /bin/bash`
-
-Where <path_to_binary> is the local path where your binary files of interest are located
-
-Commands available with RetDec include:
-
-`retdec-ar-extractor    retdec-config   retdec-fileinfo.py`
-`retdec-macho-extractor retdec-unpacker retdec-archive-decompiler.py`
-`retdec-config.py       retdec-getsig   retdec-pat2yara`
-`retdec-unpacker.py     retdec-bin2llvmir retdec-decompiler.py`
-`retdec-idb2pat         retdec-signature-from-library-creator.py`
-`retdec-utils.py        retdec-bin2pat  retdec-fileinfo`
-`retdec-llvmir2hll      retdec-stacofin retdec-yarac`
-
-Username and Password for the Docker are: retdec/retdec
-
-  [1]: https://github.com/avast/retdec
+Then run RetDec commands (starting with `retdec-`) inside the container, such as `retdec-decompiler`, `retdec-fileinfo`, and `retdec-unpacker`. Before running the application, create ~/workdir on your host.
