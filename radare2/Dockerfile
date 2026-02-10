@@ -4,7 +4,7 @@
 # Category: Dynamically Reverse-Engineer Code: General
 # Author: https://github.com/radareorg/radare2/blob/master/AUTHORS.md
 # License: GNU Lesser General Public License (LGPL) v3: https://github.com/radareorg/radare2/blob/master/COPYING
-# Notes: r2, rasm2, rabin2, rahash2, rafind2, r2agent
+# Notes: r2, rasm2, rabin2, rahash2, rafind2, r2agent, r2ai, decai
 #
 # To run this image after installing Docker, use the command below, replacing
 # "~/workdir" with the path to your working directory on the underlying host.
@@ -20,7 +20,7 @@
 
 FROM ubuntu:24.04
 LABEL maintainer="Lenny Zeltser (@lennyzeltser, www.zeltser.com)"
-LABEL updated="9 Feb 2026"
+LABEL updated="10 Feb 2026"
 LABEL updated_by="lennyzeltser"
 
 ENV LANG=C.UTF-8
@@ -54,6 +54,21 @@ RUN groupadd -r nonroot && \
 
 USER nonroot
 RUN r2pm -U
+
+# Install r2ai and decai plugins (build deps removed at end of layer)
+RUN sudo wget -q -O /tmp/radare2-dev_${R2VER}_amd64.deb \
+    https://github.com/radareorg/radare2/releases/download/${R2VER}/radare2-dev_${R2VER}_amd64.deb && \
+    sudo apt-get update && \
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    gcc make pkg-config libc6-dev curl && \
+    sudo dpkg -i /tmp/radare2-dev_${R2VER}_amd64.deb && \
+    r2pm -ci r2ai && \
+    r2pm -ci decai && \
+    sudo dpkg -r radare2-dev && \
+    sudo rm -f /tmp/radare2-dev_${R2VER}_amd64.deb && \
+    sudo apt-get remove --purge -y gcc make pkg-config libc6-dev curl && \
+    sudo apt-get autoremove --purge -y && \
+    sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*
 
 ENV HOME=/home/nonroot
 ENV USER=nonroot
