@@ -25,6 +25,9 @@ ENV LC_ALL=C.UTF-8
 ARG RZVER=v0.8.2
 
 USER root
+
+# Install build deps, compile rizin, then remove build-only packages
+# in a single layer to avoid shipping ~300 MB of dead weight from gcc/meson/etc.
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -41,9 +44,7 @@ RUN apt-get update && \
     linux-libc-dev \
     meson \
     ninja-build && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN wget -q -O /tmp/rizin-src.tar.xz \
+    wget -q -O /tmp/rizin-src.tar.xz \
     https://github.com/rizinorg/rizin/releases/download/${RZVER}/rizin-src-${RZVER}.tar.xz && \
     cd /tmp && \
     tar xf rizin-src.tar.xz && \
