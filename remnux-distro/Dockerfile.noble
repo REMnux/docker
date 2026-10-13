@@ -25,6 +25,7 @@
 #
 # To minimize the image size, the following are removed from the container:
 # - VS Code (code): Use Remote-SSH extension from your host instead
+# - Firefox (firefox): Use the browser on your host instead
 # - Wine and Wine-dependent tools (scdbg, ssview, shellcode2exe-bat, runsc)
 # - Python bytecode (.pyc files and __pycache__ directories)
 # To install these tools, run "remnux install" or use apt to install selectively.
@@ -43,7 +44,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     chmod +x /tmp/remnux-installer && \
     /tmp/remnux-installer install --mode=cloud --user=remnux && \
     apt-get purge -y snapd libbison-dev docker-ce-cli \
-                     code \
+                     code firefox \
                      winehq-staging wine-staging wine-staging-amd64 wine-staging-i386 \
                      scdbg runsc && \
     apt-get autoremove -y && \
