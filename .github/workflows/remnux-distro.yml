@@ -1,0 +1,247 @@
+# Builds the remnux/remnux-distro image for amd64 and arm64 on GitHub's native runners and
+# publishes both under the noble and latest tags. Runs only when a maintainer starts it.
+#
+# With "push" off, each runner builds the image into a local archive and publishes nothing. The
+# workflow then reports the build time, disk use, and image size in the job summary, along with
+# package differences from the published amd64 image and between architectures.
+#
+# To publish, the workflow signs in to Docker Hub through an OIDC connection in the remnux
+# organization. No Docker Hub credential is stored in the repository. The connection's ID goes
+# in the DOCKERHUB_OIDC_CONNECTIONID repository variable.
+name: remnux-distro
+run-name: "remnux-distro: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the noble and latest tags"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: remnux-distro
+
+env:
+  IMAGE: remnux/remnux-distro
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 300
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Free disk space
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/local/share/boost
+          docker image prune -af > /dev/null
+          df -h /
+
+      # Record used and available bytes on / every 15 seconds until the job ends.
+      - name: Start recording disk use
+        run: |
+          nohup bash -c 'while true; do
+              read -r used avail < <(df -B1 --output=used,avail / | tail -1); echo "$used $avail"; sleep 15
+            done' > "$RUNNER_TEMP/disk.log" 2>&1 &
+          date +%s > "$RUNNER_TEMP/build-start"
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: remnux-distro
+          file: remnux-distro/Dockerfile.noble
+          platforms: linux/${{ matrix.arch }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          outputs: >-
+            ${{ inputs.push
+            && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=false', env.IMAGE)
+            || format('type=oci,dest={0}/image.tar', runner.temp) }}
+
+      - name: Record the end of the build
+        if: ${{ !cancelled() }}
+        run: date +%s > "$RUNNER_TEMP/build-end"
+
+      # Docker Hub's OIDC tokens last at most an hour, and the build can take longer, so sign in
+      # only after the image is built. The push step then reuses the build from the cache. If
+      # something changes in between, such as a new ubuntu:24.04 image, the push fails and the
+      # job can be re-run.
+      - name: Log in to Docker Hub
+        if: inputs.push
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: remnux
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ vars.DOCKERHUB_OIDC_CONNECTIONID }}
+          DOCKERHUB_OIDC_EXPIREIN: 3600
+
+      - name: Push by digest
+        id: push
+        if: inputs.push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: remnux-distro
+          file: remnux-distro/Dockerfile.noble
+          platforms: linux/${{ matrix.arch }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Save the digest
+        if: inputs.push
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: inputs.push
+        with:
+          name: digest-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: List the image's contents
+        if: ${{ !inputs.push }}
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/contents"
+          python3 .github/scripts/image-contents.py oci "$RUNNER_TEMP/image.tar" "$ARCH" \
+            "$RUNNER_TEMP/contents/new-$ARCH.txt" > "$RUNNER_TEMP/size"
+          rm -f "$RUNNER_TEMP/image.tar"
+
+      - name: Measure the pushed image
+        if: inputs.push
+        env:
+          ARCH: ${{ matrix.arch }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: python3 .github/scripts/image-contents.py size "$IMAGE@$DIGEST" "$ARCH" > "$RUNNER_TEMP/size"
+
+      - name: Report build time, disk use, and image size
+        if: ${{ !cancelled() }}
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          gb() { numfmt --to-unit=1000000000 --format=%.1f "$1"; }
+          cd "$RUNNER_TEMP"
+          start=$(cat build-start)
+          end=$(cat build-end 2>/dev/null || date +%s)
+          peak=$(cut -d' ' -f1 disk.log | sort -n | tail -1)
+          low=$(cut -d' ' -f2 disk.log | sort -n | head -1)
+          total=$(df -B1 --output=size / | tail -1)
+          size=$(cat size 2>/dev/null || true)
+          if [ -n "$size" ]; then size="$(gb "$size") GB"; else size="not measured"; fi
+          {
+            echo "### linux/$ARCH"
+            echo "- Build time: $(( (end - start) / 60 )) minutes"
+            echo "- Disk, sampled every 15 seconds: peak use $(gb "$peak") GB of $(gb "$total") GB, least free $(gb "$low") GB"
+            echo "- Compressed image size: $size"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          cp disk.log "contents/disk-$ARCH.log" 2>/dev/null || true
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !inputs.push && !cancelled() }}
+        with:
+          name: contents-${{ matrix.arch }}
+          path: ${{ runner.temp }}/contents
+          if-no-files-found: warn
+          retention-days: 14
+
+  compare:
+    if: ${{ !inputs.push && !cancelled() }}
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: contents-*
+          path: ${{ runner.temp }}/contents
+          merge-multiple: true
+
+      - name: Compare with the published image and across architectures
+        working-directory: ${{ runner.temp }}/contents
+        run: |
+          script=$GITHUB_WORKSPACE/.github/scripts/image-contents.py
+          python3 "$script" hub "$IMAGE:noble" amd64 published-amd64.txt > /dev/null
+          {
+            [ -f new-amd64.txt ] && python3 "$script" diff published-amd64.txt new-amd64.txt \
+              "the published amd64 image" "the new amd64 image"
+            [ -f new-amd64.txt ] && [ -f new-arm64.txt ] && python3 "$script" diff new-amd64.txt new-arm64.txt \
+              "amd64" "arm64"
+            true
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: contents-published
+          path: ${{ runner.temp }}/contents/published-amd64.txt
+          retention-days: 14
+
+  merge:
+    if: inputs.push
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: digest-*
+          path: ${{ runner.temp }}/digests
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: remnux
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ vars.DOCKERHUB_OIDC_CONNECTIONID }}
+          DOCKERHUB_OIDC_EXPIREIN: 900
+
+      - name: Point the noble and latest tags at both images
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          [ "$(ls | wc -l)" -eq 2 ] || { echo "::error::expected 2 digests, found: $(ls)"; exit 1; }
+          docker buildx imagetools create -t "$IMAGE:noble" -t "$IMAGE:latest" $(printf "$IMAGE@sha256:%s " *)
+          docker buildx imagetools inspect "$IMAGE:noble"
+
+      # The tags are updated one at a time, so a failure partway could leave them apart.
+      # If this fails, re-run this job: it reuses the same images.
+      - name: Check that both tags point to the same images
+        run: |
+          noble=$(docker buildx imagetools inspect --raw "$IMAGE:noble" | sha256sum)
+          latest=$(docker buildx imagetools inspect --raw "$IMAGE:latest" | sha256sum)
+          [ "$noble" = "$latest" ] || { echo "::error::noble and latest differ"; exit 1; }
