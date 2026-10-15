@@ -31,4 +31,6 @@ Decompile a function inside `r2` with the `pdg` command after analyzing the bina
     s main
     pdg
 
-Use `pdg?` to list the available subcommands. This plugin is amd64 only.
+Use `pdg?` to list the available subcommands.
+
+The image, including r2ghidra, runs on amd64 and arm64 systems, such as Apple Silicon Macs.
