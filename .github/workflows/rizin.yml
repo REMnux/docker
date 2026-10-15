@@ -1,0 +1,39 @@
+# Builds remnux/rizin for amd64 and arm64 with build-image.yml. Runs only when a maintainer
+# starts it. With "push" off, it builds and tests the image and publishes nothing.
+name: rizin
+run-name: "rizin: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the latest tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/rizin
+      context: rizin
+      dockerfile: rizin/Dockerfile
+      tags: latest
+      platforms: '["amd64", "arm64"]'
+      push: ${{ inputs.push }}
+      # rz-bin colors its plain output even in a pipe, so the test reads its JSON.
+      test: |
+        rizin -v
+        rz-bin -Ij /bin/ls > /tmp/info.json
+        grep -Eq '"arch":"(x86|arm)"' /tmp/info.json
+        rizin -e scr.color=0 -qc 'aa; pdf @ entry0' /bin/ls > /tmp/entry.txt
+        grep -q 'entry0' /tmp/entry.txt

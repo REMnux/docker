@@ -1,0 +1,40 @@
+# Builds remnux/saltstack-tester:noble3006 (also tagged latest) for amd64 and arm64 with
+# build-image.yml. Runs only when a maintainer starts it. With "push" off, it builds and tests
+# the image and publishes nothing. The focal, focal3005, and bionic tags have no workflow.
+name: saltstack-tester
+run-name: "saltstack-tester: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the noble3006 and latest tags"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/saltstack-tester
+      context: saltstack-tester
+      dockerfile: saltstack-tester/Dockerfile.noble3006
+      tags: noble3006 latest
+      platforms: '["amd64", "arm64"]'
+      push: ${{ inputs.push }}
+      # The tag promises the Salt 3006 release line, which the REMnux installer uses.
+      test: |
+        salt-call --version > /tmp/version.txt
+        cat /tmp/version.txt
+        grep -q '^salt-call 3006\.' /tmp/version.txt
+        salt-call --local test.ping > /tmp/ping.txt
+        grep -q True /tmp/ping.txt

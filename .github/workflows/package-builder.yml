@@ -1,0 +1,38 @@
+# Builds remnux/package-builder:noble for amd64 and arm64 with build-image.yml. Runs only when
+# a maintainer starts it. With "push" off, it builds and tests the image and publishes nothing.
+name: package-builder
+run-name: "package-builder: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the noble tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/package-builder
+      context: package-builder
+      dockerfile: package-builder/Dockerfile.noble
+      tags: noble
+      platforms: '["amd64", "arm64"]'
+      push: ${{ inputs.push }}
+      test: |
+        dpkg-buildpackage --version | head -1
+        printf '#include <stdio.h>\nint main(void) { puts("hello from package-builder"); return 0; }\n' > /tmp/hello.c
+        cc -o /tmp/hello /tmp/hello.c
+        test "$(/tmp/hello)" = 'hello from package-builder'
+        for tool in debuild dh dh_make dput lintian quilt cmake fakeroot gpg; do command -v "$tool" > /dev/null; done

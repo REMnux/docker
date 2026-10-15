@@ -1,0 +1,50 @@
+# Builds remnux/thug for amd64 with build-image.yml. The image is amd64-only because STPyV8
+# publishes no Linux arm64 build. Runs only when a maintainer starts it. With "push" off, it
+# builds and tests the image and publishes nothing.
+name: thug
+run-name: "thug: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the latest tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/thug
+      context: thug
+      dockerfile: thug/Dockerfile
+      tags: latest
+      platforms: '["amd64"]'
+      push: ${{ inputs.push }}
+      # The page builds its iframe URL in JavaScript, so the URL appears in Thug's log only
+      # if V8 ran the script.
+      test: |
+        thug -V
+        /opt/thug/bin/python -c 'import STPyV8
+        with STPyV8.JSContext() as ctx:
+            assert ctx.eval("[1, 2, 3].map(function (x) { return x * 2; }).join(\",\")") == "2,4,6"
+        print("STPyV8 OK")'
+        cat > /tmp/page.html <<'HTML'
+        <html><body><script>
+        var u = "http://example.invalid/" + "payload.exe";
+        eval("document.write('<iframe src=\"' + u + '\"></iframe>')");
+        </script></body></html>
+        HTML
+        cd /tmp
+        thug -n /tmp/thug-out -l /tmp/page.html > /tmp/thug.log 2>&1
+        grep -q 'Deobfuscated argument: <iframe src="http://example.invalid/payload.exe">' /tmp/thug.log

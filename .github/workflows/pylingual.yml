@@ -1,0 +1,39 @@
+# Builds remnux/pylingual for amd64 and arm64 with build-image.yml. Runs only when a maintainer
+# starts it. With "push" off, it builds and tests the image and publishes nothing.
+name: pylingual
+run-name: "pylingual: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the latest tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/pylingual
+      context: pylingual
+      dockerfile: pylingual/Dockerfile
+      tags: latest
+      platforms: '["amd64", "arm64"]'
+      push: ${{ inputs.push }}
+      # PyLingual downloads its models (1-2 GB) on first use, and the test runs without a
+      # network, so it checks Torch's native code and the PyLingual command instead.
+      test: |
+        python3 -c 'import torch; t = torch.tensor([1.0, 2.0, 3.0]); assert float((t * 2).sum()) == 12.0; print("torch", torch.__version__)'
+        python3 -c 'import pylingual, transformers, tokenizers'
+        pylingual --help > /tmp/help.txt
+        grep -q 'decompile Python bytecode' /tmp/help.txt

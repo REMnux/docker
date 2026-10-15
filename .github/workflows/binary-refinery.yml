@@ -1,0 +1,42 @@
+# Builds remnux/binary-refinery for amd64 and arm64 with build-image.yml. Runs only when a
+# maintainer starts it. With "push" off, it builds and tests the image and publishes nothing.
+name: binary-refinery
+run-name: "binary-refinery: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the latest tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/binary-refinery
+      context: binary-refinery
+      dockerfile: binary-refinery/Dockerfile
+      tags: latest
+      platforms: '["amd64", "arm64"]'
+      push: ${{ inputs.push }}
+      # aes and asm exercise compiled dependencies (pycryptodome and capstone).
+      test: |
+        python3 -c 'import refinery; print("binary-refinery", refinery.__version__)'
+        test "$(emit 'Hello REMnux' | b64 -R | b64)" = 'Hello REMnux'
+        key=h:00112233445566778899aabbccddeeff
+        iv=h:00000000000000000000000000000000
+        test "$(emit 'Hello REMnux' | aes -R --mode cbc --iv $iv $key | aes --mode cbc --iv $iv $key)" = 'Hello REMnux'
+        emit h:90c3 | asm -A x64 > /tmp/asm.txt
+        grep -q nop /tmp/asm.txt
+        grep -q ret /tmp/asm.txt

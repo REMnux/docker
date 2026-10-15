@@ -1,0 +1,42 @@
+# Builds remnux/radare2 for amd64 and arm64 with build-image.yml. Runs only when a maintainer
+# starts it. With "push" off, it builds and tests the image and publishes nothing.
+name: radare2
+run-name: "radare2: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the latest tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/radare2
+      context: radare2
+      dockerfile: radare2/Dockerfile
+      tags: latest
+      platforms: '["amd64", "arm64"]'
+      push: ${{ inputs.push }}
+      # The plugins must load for the nonroot user, and r2ghidra must decompile the image's
+      # own /bin/ls, which is an amd64 or arm64 binary.
+      test: |
+        r2 -v
+        r2 -e scr.color=0 -qc 'Lc' -- > /tmp/plugins.txt
+        grep -q '^r2ghidra ' /tmp/plugins.txt
+        grep -q '^r2ai ' /tmp/plugins.txt
+        grep -q '^decai ' /tmp/plugins.txt
+        r2 -e scr.color=0 -qc 'aa; pdg @ entry0' /bin/ls > /tmp/pdg.txt 2> /dev/null
+        grep -Eq 'entry0 *\(' /tmp/pdg.txt

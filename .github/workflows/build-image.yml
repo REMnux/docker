@@ -1,0 +1,269 @@
+# Builds one REMnux tool image on GitHub's native runners for each architecture it supports
+# and, when asked, publishes it to Docker Hub. Each image has its own workflow, such as
+# radare2.yml, which calls this one with the image's settings and smoke test.
+#
+# With "push" off, each runner builds the image, runs the smoke test in it, and reports the
+# build time and image size in the job summary. Nothing is published.
+#
+# With "push" on, each runner also pushes its image by digest, pulls that digest back, and
+# runs the smoke test again on exactly what it pushed. The tags move only after every
+# architecture passes. The job summary lists the digest each tag pointed to before, so a tag
+# can be restored with: docker buildx imagetools create -t <image>:<tag> <image>@<old digest>
+#
+# Publishing signs in to Docker Hub through the same OIDC connection as remnux-distro.yml.
+# Its ruleset must allow the image's repository.
+name: build-image
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: "Docker Hub repository, such as remnux/radare2"
+        type: string
+        required: true
+      context:
+        description: "Build context directory"
+        type: string
+        required: true
+      dockerfile:
+        description: "Path to the Dockerfile"
+        type: string
+        required: true
+      tags:
+        description: "Space-separated tags to publish"
+        type: string
+        required: true
+      platforms:
+        description: 'JSON list of architectures to build, from amd64 and arm64, such as ["amd64", "arm64"]'
+        type: string
+        required: true
+      test:
+        description: "Shell script that runs in the image with /bin/sh -e and no network"
+        type: string
+        required: true
+      push:
+        description: "Push to Docker Hub and update the tags"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ${{ inputs.image }}
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check the inputs
+        env:
+          PLATFORMS: ${{ inputs.platforms }}
+          TAGS: ${{ inputs.tags }}
+        run: |
+          jq -e 'type == "array" and length > 0 and all(.[]; . == "amd64" or . == "arm64")
+                 and (unique | length) == length' <<< "$PLATFORMS" > /dev/null ||
+            { echo "::error::platforms must be a JSON list of amd64 and arm64: $PLATFORMS"; exit 1; }
+          [ -n "${TAGS// /}" ] || { echo "::error::no tags given"; exit 1; }
+
+  build:
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ${{ fromJSON(inputs.platforms) }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Write the smoke test
+        env:
+          TEST: ${{ inputs.test }}
+        run: |
+          printf '%s\n' "$TEST" > "$RUNNER_TEMP/smoke-test.sh"
+          date +%s > "$RUNNER_TEMP/build-start"
+
+      - name: Build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          platforms: linux/${{ matrix.arch }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          load: true
+          tags: smoke-test:${{ matrix.arch }}
+
+      - name: Record the end of the build
+        run: date +%s > "$RUNNER_TEMP/build-end"
+
+      - name: Run the smoke test
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          docker run --rm --network none --entrypoint /bin/sh \
+            -v "$RUNNER_TEMP/smoke-test.sh:/tmp/smoke-test.sh:ro" \
+            "smoke-test:$ARCH" -e /tmp/smoke-test.sh
+
+      # Docker Hub's OIDC tokens expire, so sign in only after the build. The push step then
+      # reuses the build from the cache.
+      - name: Log in to Docker Hub
+        if: inputs.push
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: remnux
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ vars.DOCKERHUB_OIDC_CONNECTIONID }}
+          DOCKERHUB_OIDC_EXPIREIN: 3600
+
+      - name: Push by digest
+        id: push
+        if: inputs.push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          platforms: linux/${{ matrix.arch }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+      # If the push step rebuilt anything, the pushed image could differ from the one tested
+      # above, so test what was pushed.
+      - name: Run the smoke test on the pushed image
+        id: verify
+        if: inputs.push
+        env:
+          ARCH: ${{ matrix.arch }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          docker pull --platform "linux/$ARCH" "$IMAGE@$DIGEST"
+          docker run --rm --network none --platform "linux/$ARCH" --entrypoint /bin/sh \
+            -v "$RUNNER_TEMP/smoke-test.sh:/tmp/smoke-test.sh:ro" \
+            "$IMAGE@$DIGEST" -e /tmp/smoke-test.sh
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: inputs.push
+        with:
+          name: digest-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Report build time and image size
+        if: ${{ !cancelled() }}
+        env:
+          ARCH: ${{ matrix.arch }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+          VERIFIED: ${{ steps.verify.outcome }}
+        run: |
+          gb() { numfmt --to-unit=1000000000 --format=%.2f "$1"; }
+          cd "$RUNNER_TEMP"
+          start=$(cat build-start)
+          end=$(cat build-end 2>/dev/null || date +%s)
+          size=$(docker image inspect --format '{{.Size}}' "smoke-test:$ARCH" 2>/dev/null || true)
+          if [ -n "$size" ]; then size="$(gb "$size") GB"; else size="not measured"; fi
+          {
+            echo "### $IMAGE linux/$ARCH"
+            echo "- Build time: $(( (end - start) / 60 )) minutes"
+            echo "- Uncompressed image size: $size"
+            if [ -n "$DIGEST" ]; then
+              echo "- Compressed size on Docker Hub: $(gb "$(python3 "$GITHUB_WORKSPACE/.github/scripts/image-contents.py" size "$IMAGE@$DIGEST" "$ARCH")") GB"
+              if [ "$VERIFIED" = success ]; then
+                echo "- Pushed and tested: \`$DIGEST\`"
+              else
+                echo "- Pushed \`$DIGEST\`, but the smoke test on the pushed image did not pass"
+              fi
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+  merge:
+    if: inputs.push
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: digest-*
+          path: ${{ runner.temp }}/digests
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: remnux
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ vars.DOCKERHUB_OIDC_CONNECTIONID }}
+          DOCKERHUB_OIDC_EXPIREIN: 900
+
+      # Stop before changing any tag if a tag's current digest can't be read, unless the tag
+      # doesn't exist yet. Otherwise the rollback record would be lost.
+      - name: Record the digests the tags point to now
+        env:
+          TAGS: ${{ inputs.tags }}
+        run: |
+          echo "### Before this run" >> "$GITHUB_STEP_SUMMARY"
+          for tag in $TAGS; do
+            if manifest=$(docker buildx imagetools inspect --format '{{json .Manifest}}' "$IMAGE:$tag" 2> "$RUNNER_TEMP/inspect.err"); then
+              old=$(jq -r .digest <<< "$manifest")
+            elif grep -q ': not found$' "$RUNNER_TEMP/inspect.err"; then
+              old=""
+            else
+              cat "$RUNNER_TEMP/inspect.err"
+              echo "::error::could not read the current digest of $IMAGE:$tag; re-run this job"
+              exit 1
+            fi
+            echo "- \`$IMAGE:$tag\` pointed to \`${old:-nothing}\`" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Point the tags at the tested images
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          PLATFORMS: ${{ inputs.platforms }}
+          TAGS: ${{ inputs.tags }}
+        run: |
+          expected=$(jq length <<< "$PLATFORMS")
+          shopt -s nullglob
+          digests=(*)
+          [ "${#digests[@]}" -eq "$expected" ] ||
+            { echo "::error::expected $expected digests, found: ${digests[*]}"; exit 1; }
+          args=()
+          for tag in $TAGS; do args+=(-t "$IMAGE:$tag"); done
+          docker buildx imagetools create "${args[@]}" "${digests[@]/#/$IMAGE@sha256:}"
+
+      # The tags are updated one at a time, so a failure partway could leave them apart.
+      # If this fails, re-run this job: it reuses the same images.
+      - name: Check that every tag points to the new images
+        env:
+          PLATFORMS: ${{ inputs.platforms }}
+          TAGS: ${{ inputs.tags }}
+        run: |
+          want=$(jq -c 'map("linux/" + .) | sort' <<< "$PLATFORMS")
+          first=""
+          for tag in $TAGS; do
+            manifest=$(docker buildx imagetools inspect --format '{{json .Manifest}}' "$IMAGE:$tag")
+            digest=$(jq -r .digest <<< "$manifest")
+            got=$(jq -c '[.manifests[] | select(.platform.os == "linux")
+                          | "linux/" + .platform.architecture] | sort' <<< "$manifest")
+            [ "$got" = "$want" ] || { echo "::error::$tag has platforms $got, expected $want"; exit 1; }
+            [ -z "$first" ] || [ "$digest" = "$first" ] || { echo "::error::$tag differs from the other tags"; exit 1; }
+            first=$digest
+            echo "- \`$IMAGE:$tag\` now points to \`$digest\` ($got)" >> "$GITHUB_STEP_SUMMARY"
+          done

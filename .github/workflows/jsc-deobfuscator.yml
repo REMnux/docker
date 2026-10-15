@@ -1,0 +1,57 @@
+# Builds remnux/jsc-deobfuscator for amd64 with build-image.yml. The image is amd64-only
+# because v8dasm is a prebuilt x86-64 binary. Runs only when a maintainer starts it. With
+# "push" off, it builds and tests the image and publishes nothing.
+name: jsc-deobfuscator
+run-name: "jsc-deobfuscator: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the latest tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/jsc-deobfuscator
+      context: jsc-deobfuscator
+      dockerfile: jsc-deobfuscator/Dockerfile
+      tags: latest
+      platforms: '["amd64"]'
+      push: ${{ inputs.push }}
+      # hello.jsc is V8 bytecode that Node 18.20.8 (V8 10.2.154.26, the version v8dasm targets)
+      # compiled with --no-lazy from this script:
+      #   function greet(name) { var s = 'Hello, ' + name; for (var i = 0; i < 3; i++) { s += '!'; } return s; } greet('REMnux');
+      test: |
+        base64 -d > /tmp/hello.jsc <<'EOF'
+        YwXewIKgaTV3AAAAb/IdPIACAAACXQyqARxTASgHqGAAAAAAGAAAAAEUTGAAAAAAAwAAAAEQTGAAAAAAAgAAAAEc
+        UwEwkGAAAAAAJgAAAAEQTGAAAAAAAgAAAAEMUWF2pu6rBwAAAEhlbGxvLCAAAQxRYaaemD4BAAAAIQAAAAAAAAAH
+        2QEBFEtjAAAAABcAAAABPAJECygIVAQUBQAKMBIXC18GqAEEJABmGAAAABAAAAAAAAAAAAAAABMAwgsDOfgAxAzD
+        DQNt+QGZExMBOfoCGfr4xAv5UQPDiRUAC/qpAAABJFJiAAAAAMJxAQAAAAAAAQAAAAAAAAAAAAAAAQxRYSJyXC8F
+        AAAAZ3JlZXQAAABgAAAAAP////9EYQAAAAAOAAAAAAAAAGYAAAABDAeYYQQAAAAAAAAAMEIIAAAAAAABRAc9CggA
+        ARRRY9KOyNYXAAAAZXZhbG1hY2hpbmUuPGFub255bW91cz4AYQAAAAAAAAAAAAAAAAAAAABEYAAAAAACAAAARGAA
+        AAAAqQEAAERgAAAAAAAAAAABEAc5AWAAAAAAAgAAABgEABgEEGAAAAAACgAAAIBEXQcJAmEBAAIADgACAAARAAAB
+        AAAAYAAAAAAAAAAABCwBDFFhrjYGjAYAAABSRU1udXgAAJEBEEtiAAAAAAsAAAABBA8ACpwDDwAKQAAAAAAAZBgA
+        AAAIAAAAAAAAAAAAAAATAMMZ/vhlVwH5AiEBAMMTAsJi+fgCxKkBIFJiAAAAAEQwAAAAAAAAAAAAAAAAAAAAAAAA
+        SWIAAAAA/////wAAAAAAAAAAAAAAAHcAAAABDJJhBAAAAAEAAAAGEAAAAAAAAAQ0YQAAAQAAAAIAABAACAAAAAAM
+        CwsLCw==
+        EOF
+        cd /tmp
+        v8dasm /tmp/hello.jsc > /tmp/hello.disasm.txt
+        grep -q 'SharedFunctionInfo greet' /tmp/hello.disasm.txt
+        python3 "$JSC_DEOBF_ROOT/View8/view8.py" --input_format disassembled --inp /tmp/hello.disasm.txt \
+          --normalize --out /tmp/hello.dec.txt --export_format decompiled serialized > /tmp/view8.log 2>&1
+        grep -q '"Hello, "' /tmp/hello.dec.txt
+        command -v brotli > /dev/null

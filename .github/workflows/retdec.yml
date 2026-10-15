@@ -1,0 +1,39 @@
+# Builds remnux/retdec for amd64 with build-image.yml. The image is amd64-only because RetDec
+# publishes only an x86-64 Linux build. Runs only when a maintainer starts it. With "push"
+# off, it builds and tests the image and publishes nothing.
+name: retdec
+run-name: "retdec: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the latest tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/retdec
+      context: retdec
+      dockerfile: retdec/Dockerfile
+      tags: latest
+      platforms: '["amd64"]'
+      push: ${{ inputs.push }}
+      test: |
+        upx -V | head -1
+        retdec-fileinfo /bin/true > /tmp/fileinfo.txt
+        grep -Eq '^File format +: ELF' /tmp/fileinfo.txt
+        retdec-decompiler /bin/true -o /tmp/true.c > /tmp/decompile.log 2>&1
+        grep -q 'entry_point(' /tmp/true.c
