@@ -1,8 +1,11 @@
 ARG OSVERSION=24.04
-ARG SALTVERSION=3006
 ARG OSCODE=noble
 
 FROM ubuntu:$OSVERSION
+
+# The Salt version that the REMnux installer (Cast) installs. Without a pinned version, apt
+# installs the newest Salt release.
+ARG SALTVERSION=3006.9
 
 RUN \
   export DEBIAN_FRONTEND=noninteractive && \
@@ -12,7 +15,7 @@ RUN \
   wget -O - "https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public" | tee /etc/apt/keyrings/salt-archive-keyring.pgp && \
   wget -O - "https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.sources" | tee /etc/apt/sources.list.d/salt.sources && \
   apt-get update && \
-  apt-get install -y salt-common && \
+  apt-get install -y "salt-common=${SALTVERSION}" && \
   mkdir -p /etc/salt && \
   echo "file_client: local" > /etc/salt/minion && \
   unset DEBIAN_FRONTEND
