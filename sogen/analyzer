@@ -1,0 +1,99 @@
+#!/bin/bash
+# Runs the Sogen analyzer with two conveniences for the container:
+#
+#   - When the command line names no emulation root (-e/--emulation) and one
+#     exists at $SOGEN_ROOT, the wrapper passes that root.
+#   - When the command line names no path mapping (-p/--path) and the program
+#     operand names an existing host file that starts with the "MZ" header of a
+#     Windows executable, the wrapper maps that file to c:\ inside the
+#     emulated Windows and runs it from there, which is how Sogen expects to
+#     see the program it analyzes.
+#
+# The wrapper walks the analyzer's options with the option table of the pinned
+# Sogen commit (see /opt/sogen/COMMIT), stops at the program operand, and
+# leaves the program's own arguments untouched. Set EMULATOR_LINUX=1 to run the
+# Linux analyzer instead. The wrapper then adds nothing.
+
+root="${SOGEN_ROOT:-/home/nonroot/workdir/root}"
+analyzer=/opt/sogen/analyzer
+
+if [ -n "${EMULATOR_LINUX:-}" ]; then
+    exec "$analyzer" "$@"
+fi
+
+# Analyzer options that take values, from the pinned commit's main.cpp.
+# Re-check this table when the pinned commit changes.
+takes_one() {
+    case "$1" in
+        -e|--emulation|-a|--snapshot|-r|--registry|-m|--module|-i|--ignore|\
+        --bind|--port|--gdb-arch|--break-call|--working-directory|\
+        --managed-process-port|--managed-process-token|--minidump|--report|\
+        --report-format|--stdout|--whp-exec-hook|--reg-file|--vcpus|\
+        --network|--backend) return 0 ;;
+    esac
+    return 1
+}
+takes_two() {
+    case "$1" in
+        -p|--path|--env) return 0 ;;
+    esac
+    return 1
+}
+
+have_root_option=0
+have_path_option=0
+operand_index=0   # 1-based position of the program operand among "$@", 0 if none
+i=1
+n=$#
+while [ "$i" -le "$n" ]; do
+    arg="${!i}"
+    case "$arg" in
+        -h|--help)
+            exec "$analyzer" "$@"
+            ;;
+        --emulation=*|-e?*)
+            have_root_option=1
+            ;;
+        --path=*|-p?*)
+            have_path_option=1
+            ;;
+        --*=*)
+            ;;
+        -?*)
+            if takes_one "$arg"; then
+                if [ "$arg" = -e ] || [ "$arg" = --emulation ]; then have_root_option=1; fi
+                i=$((i + 1))
+            elif takes_two "$arg"; then
+                if [ "$arg" = -p ] || [ "$arg" = --path ]; then have_path_option=1; fi
+                i=$((i + 2))
+            fi
+            ;;
+        *)
+            operand_index=$i
+            break
+            ;;
+    esac
+    i=$((i + 1))
+done
+
+prefix=()
+if [ "$have_root_option" -eq 0 ]; then
+    if [ -f "$root/api-set.bin" ]; then
+        prefix+=(-e "$root")
+    elif [ "$operand_index" -gt 0 ]; then
+        echo "analyzer: no emulation root at $root. Run get-sogen-root to download one, or pass -e <root>." >&2
+    fi
+fi
+
+if [ "$have_path_option" -eq 0 ] && [ "$operand_index" -gt 0 ]; then
+    operand="${!operand_index}"
+    if [ -f "$operand" ] && [ "$(head -c 2 -- "$operand" 2>/dev/null)" = "MZ" ]; then
+        name=$(basename -- "$operand")
+        host=$(readlink -f -- "$operand")
+        before=("${@:1:operand_index-1}")
+        after=("${@:operand_index+1}")
+        exec "$analyzer" "${prefix[@]}" -p "c:/$name" "$host" "${before[@]}" "c:/$name" "${after[@]}"
+    fi
+fi
+
+exec "$analyzer" "${prefix[@]}" "$@"

@@ -1,0 +1,50 @@
+# Builds remnux/sogen for amd64 and arm64 with build-image.yml. Runs only when a maintainer
+# starts it. With "push" off, it builds and tests the image and publishes nothing.
+name: sogen
+run-name: "sogen: ${{ inputs.push && 'build and push' || 'build only' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to Docker Hub and update the latest tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  image:
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      image: remnux/sogen
+      context: sogen
+      dockerfile: sogen/Dockerfile
+      tags: latest
+      platforms: '["amd64", "arm64"]'
+      push: ${{ inputs.push }}
+      # The Windows analyzer needs an emulation root that the image can't carry, so the test
+      # runs the Linux side of the same binary instead: a 132-byte static x86-64 ELF that
+      # exits with 42. Unicorn emulates it on both architectures, which proves the emulator
+      # core, the loader, and the syscall path without any download. The other lines check
+      # the entrypoint, the wrapper's hint when the root is missing, and the pinned commit.
+      test: |
+        analyzer --help > /tmp/help.txt
+        grep -q 'Sogen Windows Analyzer' /tmp/help.txt
+        test -f /opt/sogen/COMMIT
+        /usr/local/bin/entrypoint.sh true
+        analyzer -c sample.exe 2>&1 | grep -q 'no emulation root'
+        echo 'f0VMRgIBAQAAAAAAAAAAAAIAPgABAAAAeABAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAEAAOAABAAAAAAAAAAEAAAAFAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAAAAAhAAAAAAAAACEAAAAAAAAAAAQAAAAAAAAvyoAAAC4PAAAAA8F' | base64 -d > /tmp/exit42
+        chmod +x /tmp/exit42
+        set +e
+        EMULATOR_LINUX=1 analyzer /tmp/exit42
+        status=$?
+        set -e
+        test "$status" -eq 42

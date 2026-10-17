@@ -1,0 +1,52 @@
+#!/bin/sh
+# Downloads the prebuilt Sogen emulation root from the Sogen project and
+# unpacks it at $SOGEN_ROOT, where the analyzer wrapper finds it. The download
+# and the unpacking happen in a private temporary directory next to the
+# destination, and the finished root moves into place in one step, so an
+# interrupted run leaves nothing half-built at the destination.
+set -eu
+
+url="https://sogen.dev/root.zip"
+root="${SOGEN_ROOT:-/home/nonroot/workdir/root}"
+parent=$(dirname -- "$root")
+
+if [ -f "$root/api-set.bin" ]; then
+    echo "An emulation root already exists at $root."
+    echo "Remove it first if you want to download a fresh copy."
+    exit 0
+fi
+
+if [ -e "$root" ]; then
+    echo "$root exists but holds no emulation root (no api-set.bin). Move it aside first." >&2
+    exit 1
+fi
+
+mkdir -p -- "$parent"
+tmp=$(mktemp -d -- "$parent/.sogen-root.XXXXXX")
+trap 'rm -rf -- "$tmp"' EXIT INT TERM
+
+echo "Downloading $url (about 180 MB) ..."
+curl -fL --progress-bar -o "$tmp/root.zip" "$url"
+
+echo "Checking the archive ..."
+unzip -tq "$tmp/root.zip" > /dev/null
+
+echo "Unpacking (about 520 MB) ..."
+unzip -q "$tmp/root.zip" -d "$tmp/unpacked"
+rm -f -- "$tmp/root.zip"
+
+if [ ! -f "$tmp/unpacked/root/api-set.bin" ]; then
+    echo "The archive didn't contain the expected root directory." >&2
+    exit 1
+fi
+
+mv -- "$tmp/unpacked/root" "$root"
+
+cat <<EOF
+
+The emulation root is ready at $root.
+Analyze a sample with:
+
+    analyzer sample.exe
+
+EOF
